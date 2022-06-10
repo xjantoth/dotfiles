@@ -74,23 +74,50 @@ man() {
 
 autoload -U colors && colors    # Load colors
 autoload -Uz compinit promptinit vcs_info
+
 compinit
 promptinit
+# ------------------------------------------------------------------------------
+# Customize PROMPT
+# ------------------------------------------------------------------------------
 
+precmd_vcs_info() {
+  vcs_info
+}
+precmd_functions+=(precmd_vcs_info)
+setopt prompt_subst
 
-zstyle ':completion:*' menu select completer _expand _complete _ignored _correct _approximate
+export PROMPT="%F{196}%B%(?..?%? )%b%f%F{117}%2~%f%F{245} %#%f %B\$vcs_info_msg_0_%f%b "
+#export RPROMPT="%B\$vcs_info_msg_0_%f%b"
 
-zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' check-for-changes true
-# Format the vcs_info_msg_0_ variable
-# zstyle ':vcs_info:git:*' formats '%b'
-zstyle ':vcs_info:git*' formats "%b(%a)%m%u%c"
-zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
+zstyle ':vcs_info:git:*' formats '%F{240}%b%u %f %F{237}%r%f'
+zstyle ':vcs_info:*' enable git
 
-precmd() { vcs_info }
-setopt PROMPT_SUBST
-PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}%m%{$fg[green]%}:%{$fg[blue]%}%2~ %{$fg[green]%}${vcs_info_msg_0_}%{$fg[red]%}]%{$fg[yellow]%}%(1j.%j.)%{$reset_color%} %b'
-# PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}arch%{$fg[green]%}:%{$fg[blue]%}${PWD##*/}%{$fg[green]%} ${vcs_info_msg_0_}%{$fg[red]%}]%{$reset_color%} %b'
+#
+#
+#zstyle ':completion:*' menu select completer _expand _complete _ignored _correct _approximate
+#
+#zstyle ':vcs_info:*' enable git
+#zstyle ':vcs_info:*' check-for-changes true
+## Format the vcs_info_msg_0_ variable
+## zstyle ':vcs_info:git:*' formats '%b'
+#zstyle ':vcs_info:git*' formats "%b(%a)%m%u%c"
+#zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
+#+vi-git-untracked(){
+#    if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
+#        git status --porcelain | grep -q '^?? ' 2> /dev/null ; then
+#        # This will show the marker if there are any untracked files in repo.
+#        # If instead you want to show the marker only if there are untracked
+#        # files in $PWD, use:
+#        #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
+#        hook_com[staged]+='T'
+#    fi
+#}
+#precmd() { vcs_info }
+#setopt PROMPT_SUBST
+#PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}_%{$fg[green]%}:%{$fg[blue]%}%2~ %{$fg[green]%}${vcs_info_msg_0_}%{$fg[red]%}]%{$fg[yellow]%}%(1j.%j.)%{$reset_color%} %b'
+## PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}arch%{$fg[green]%}:%{$fg[blue]%}${PWD##*/}%{$fg[green]%} ${vcs_info_msg_0_}%{$fg[red]%}]%{$reset_color%} %b'
 
 # Kubernetes
 source <(kubectl completion zsh)
@@ -140,7 +167,7 @@ function scw-destroy() {
     done
 
     echo
-    scw instance server delete ${scw_id}
+    scw instance server delete ${scw_id} with-ip
 }
 
 
@@ -155,5 +182,3 @@ bindkey '^x^e' edit-command-line
 # Vi style:
 zle -N edit-command-line
 bindkey -M vicmd v edit-command-line
-#source ~/.zsh/git-prompt.zsh/git-prompt.zsh
-#source ~/.zsh/git-prompt.zsh/examples/bashgitprompt.zsh
