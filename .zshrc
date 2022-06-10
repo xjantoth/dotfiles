@@ -82,13 +82,14 @@ zstyle ':completion:*' menu select completer _expand _complete _ignored _correct
 
 zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' check-for-changes true
-precmd() { vcs_info }
 # Format the vcs_info_msg_0_ variable
 # zstyle ':vcs_info:git:*' formats '%b'
 zstyle ':vcs_info:git*' formats "%b(%a)%m%u%c"
 zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
-setopt PROMPT_SUBST
 
+precmd() { vcs_info }
+setopt PROMPT_SUBST
+PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}%m%{$fg[green]%}:%{$fg[blue]%}%2~ %{$fg[green]%}${vcs_info_msg_0_}%{$fg[red]%}]%{$fg[yellow]%}%(1j.%j.)%{$reset_color%} %b'
 # PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}arch%{$fg[green]%}:%{$fg[blue]%}${PWD##*/}%{$fg[green]%} ${vcs_info_msg_0_}%{$fg[red]%}]%{$reset_color%} %b'
 
 # Kubernetes
@@ -154,5 +155,5 @@ bindkey '^x^e' edit-command-line
 # Vi style:
 zle -N edit-command-line
 bindkey -M vicmd v edit-command-line
-source ~/.zsh/git-prompt.zsh/git-prompt.zsh
-source ~/.zsh/git-prompt.zsh/examples/bashgitprompt.zsh
+#source ~/.zsh/git-prompt.zsh/git-prompt.zsh
+#source ~/.zsh/git-prompt.zsh/examples/bashgitprompt.zsh
