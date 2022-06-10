@@ -98,10 +98,6 @@ alias k=kubectl
 
 f(){ fzf | xargs -ro  $EDITOR ; }
 
-
-# source /usr/share/fzf/key-bindings.zsh
-# source /usr/share/fzf/completion.zsh
-
 fpath+=$HOME/.zsh/pure
 
 if type rg &> /dev/null; then
@@ -119,22 +115,6 @@ export PATH=$PATH:$GOBIN
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 export PATH="/usr/local/opt/openjdk/bin:$PATH:/usr/local/Cellar/w3m/0.5.3_7/bin"
-
-#  For the system Java wrappers to find this JDK, symlink it with
-#  sudo ln -sfn /usr/local/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
-#
-#  openjdk is keg-only, which means it was not symlinked into /usr/local,
-#  because macOS provides similar software and installing this software in
-#  parallel can cause all kinds of trouble.
-#
-#  If you need to have openjdk first in your PATH, run:
-#  echo 'export PATH="/usr/local/opt/openjdk/bin:$PATH"' >> ~/.zshrc
-#
-#  For compilers to find openjdk you may need to set:
-#  export CPPFLAGS="-I/usr/local/opt/openjdk/include"
-#  ==> Summary
-#  🍺  /usr/local/Cellar/openjdk/16.0.2: 646 files, 330MB
-
 export HOMEBREW_NO_INSTALL_CLEANUP=true
 
 alias stopj='limactl shell k8s sudo nerdctl stop jenkins'
@@ -166,5 +146,13 @@ function scw-destroy() {
 alias scw-start="scw instance server create type=DEV1-S zone=fr-par-1 image=ubuntu_focal root-volume=l:20G name=scw-k8s-cmdx ip=new project-id=431d432b-1849-445f-a66b-7d1ccdf5d34a cloud-init=@/Users/${USER}/Documents/hugo/devopsinuse/hugo/install_master.sh"
 
 
-
-alias config='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+# Enable Ctrl-x-e to edit command line
+autoload -U edit-command-line
+# Emacs style
+bindkey '^xe' edit-command-line
+bindkey '^x^e' edit-command-line
+# Vi style:
+zle -N edit-command-line
+bindkey -M vicmd v edit-command-line
+source ~/.zsh/git-prompt.zsh/git-prompt.zsh
+source ~/.zsh/git-prompt.zsh/examples/bashgitprompt.zsh
