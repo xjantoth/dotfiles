@@ -182,3 +182,10 @@ bindkey '^x^e' edit-command-line
 # Vi style:
 zle -N edit-command-line
 bindkey -M vicmd v edit-command-line
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+
+export PATH="/Users/saq4a/.local/bin:$PATH"
+export PATH="/Users/saq4a/.local/opt/gitea:$PATH"
+
