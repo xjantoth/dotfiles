@@ -110,7 +110,7 @@ alias gpp='git push --set-upstream $(git remote show) $(git branch --show-curren
 alias gp='git pull'
 alias cm='echo "git commit -m \"${${$(git branch --show-current)##*/}:0:8} \""'
 # Using az binary when behind corporate proxy
-alias azp='export REQUESTS_CA_BUNDLE=/opt/homebrew/Cellar/azure-cli/2.57.0/libexec/lib/python3.11/site-packages/certifi/cacert.pem'
+alias azp='export REQUESTS_CA_BUNDLE=/opt/homebrew/Cellar/azure-cli/2.59.0/libexec/lib/python3.11/site-packages/certifi/cacert.pem'
 
 alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
 alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
