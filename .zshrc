@@ -75,11 +75,9 @@ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 alias kp='keepassxc ~/Documents/cloudinuse-custom.kdbx'
 alias wo='cd ~/Documents/work'
 alias doc='cd ~/Documents'
-alias viberkill='kill -9 $(ps -ef | pgrep viber)'
 alias ll='ls -l'
-alias d='dragon-drag-and-drop -a -x'
-alias x="xclip -selection c"
-alias lc='colorls -lA --sd'
+#alias d='dragon-drag-and-drop -a -x'
+#alias x="xclip -selection c"
 alias tmux='tmux -u2'
 # ~/.local/share/lunarvim/lvim
 # git -C ~/.local/share/lunarvim/lvim diff
@@ -102,6 +100,7 @@ alias v='lvim'
 alias s='source ~/.zshrc'
 
 alias gd='git diff ORIG_HEAD..'
+alias gpp='git push --set-upstream $(git remote show) $(git branch --show-current)'
 
 # https://dev.to/jma/using-brewfile-to-automatic-setup-macos-from-scratch-4ok1
 # brew bundle dump
@@ -117,7 +116,7 @@ alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
 alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
 
 
-alias tt='tmux list-windows | fzf | cut -d: -f1 | xargs tmux select-window -t'
+alias ss='tmux list-windows | fzf | cut -d: -f1 | xargs tmux select-window -t'
 # How to get Primary Proxy Root certificate intercepting each and every reguest behind company proxy
 # openssl s_client -showcerts -connect amazon.de:443 2>/dev/null </dev/null |  sed -ne '/s:CN=EGB SHA2 Primary Proxy Root,/,/-END CERTIFICATE-/p' | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/proxyCA.crt
 #
@@ -135,13 +134,13 @@ function tmux-crowler ()
   tmux new-session -s "mac" -n work -d
 
   tmux new-window -t "mac:2" -n "home" -c "${HOME}";
-  tmux select-pane -t "mac:2" -U;
-  tmux new-window -t "mac:3" -n "home" -c "${HOME}/Documents";
-  tmux select-pane -t "mac:3" -U;
-  tmux new-window -t "mac:4" -n "home" -c "${HOME}/Downloads";
-  tmux select-pane -t "mac:4" -U;
+  tmux new-window -t "mac:3" -n "Documents" -c "${HOME}/Documents";
+  tmux new-window -t "mac:4" -n "Downloads" -c "${HOME}/Downloads";
+  tmux new-window -t "mac:5" -n ".tmux.conf" -c "${HOME}";
+  tmux new-window -t "mac:6" -n ".zshrc" -c "${HOME}";
+  tmux new-window -t "mac:7" -n "tmp" -c "/tmp";
 
-  for i in  $(ls -d ~/Documents/work/*/ | nl -v5 -s:); do
+  for i in  $(ls -d ~/Documents/work/*/ | nl -v8 -s:); do
     wdir=${i##*:}
     DIR=${wdir%/*}
     tmux new-window -t "mac:${i%:*}" -n "${DIR}" -c "${DIR}";
@@ -154,7 +153,7 @@ function tmux-crowler ()
 
 f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
 
-sol(){
+solution(){
   for i in $(find . -type f -name "RI*.yaml" | xargs -I % sh -c 'echo %'); do 
     FN=${i##*/}; 
     name=$(yq -o json eval $i | jq -r '[(.solution_name),(.use_case // ""),(if .suffix then .suffix|tostring else "0" end)]| map(select(length > 0)) | join("-")'); 
@@ -223,9 +222,13 @@ $timestamp
 # KeepassXC using password from local gpg via pass binary
 alias kx-list='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/keepassxc-toth.kdbx'
 alias kx-clip='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx'
+alias cm='echo "git commit -m \"${${$(git branch --show-current)##*/}:0:8} \""'
+cme() {git commit -m \""${${$(git branch --show-current)##*/}:0:8} ${*}"\"}
 
+alias gp='git pull'
 # Gcloud host
 # gcloud config set auth/token_host https://oauth2-eautsc.p.googleapis.com/token
 # v organization/*/*/*/*/XZY*.yaml
 # :bufdo exe "g/bigtable.googleapis.com/d" | update
+# cat JIRA....csv  | python3 -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' | jq -r '.[] | select(.Status=="Done" and ."Issue Type"=="Story") | [(."Issue key", .Summary, .Status, .Assignee)] | join(" ")'
 
