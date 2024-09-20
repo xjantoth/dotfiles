@@ -7,27 +7,19 @@ setopt inc_append_history
 
 autoload -U +X compinit && compinit
 
-#source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-#source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-#source /opt/homebrew/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 
 bindkey -e
 #export AWS_ASSUME_ROLE_TTL=1h
 #export AWS_SESSION_TTL=12h
 # export PYTHONPATH=$PYTHONPATH:/usr/lib/python3.9/site-packages
 export BROWSER=/usr/bin/chromium
-export VBOX_USB=usbfs
 export EDITOR=lvim
-export NNN_PLUG='p:preview-tui-ext;f:fzopen' 
-export NNN_FIFO='/tmp/nnn.fifo'
-export NNN_BMS='d:~/Documents;w:~/Downloads/'
 export LANG=en_US.UTF-8
 
 bindkey '\e[A' history-search-backward
 bindkey '\e[B' history-search-forward
-# LS_COLORS='di=34:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43'
 
 setopt interactivecomments
 
@@ -54,42 +46,20 @@ compinit
 promptinit
 
 zstyle ':completion:*' menu select completer _expand _complete _ignored _correct _approximate
-
 zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' check-for-changes true
 precmd() { vcs_info }
-# Format the vcs_info_msg_0_ variable
-# zstyle ':vcs_info:git:*' formats '%b'
 zstyle ':vcs_info:git*' formats "%b(%a)%m%u%c"
 zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
 setopt PROMPT_SUBST
 
-# PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}arch%{$fg[green]%}:%{$fg[blue]%}${PWD/#$HOME/~}%{$fg[green]%} ${vcs_info_msg_0_}%{$fg[red]%}]%{$reset_color%} %b'
 PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}arch%{$fg[green]%}:%{$fg[blue]%}${PWD##*/}%{$fg[green]%} ${vcs_info_msg_0_}%{$fg[red]%}]%{$reset_color%} %b'
 
 # Kubernetes
 source <(kubectl completion zsh)
 alias k=kubectl
-complete -F __start_kubectl k
+# complete -F __start_kubectl k
 
-f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
-
-#source /usr/share/fzf/key-bindings.zsh
-#source /usr/share/fzf/completion.zsh
-
-fpath+=$HOME/.zsh/pure
-
-if type rg &> /dev/null; then
-      export FZF_DEFAULT_COMMAND='rg --files'
-      export FZF_DEFAULT_OPTS='-m --height 50% --border'
-fi
-
-export PATH=$PATH:/home/jatoth/.vim
-export GOPATH=/home/jantoth/go
-export GOBIN=$GOPATH/bin
-export PATH=$PATH:$GOBIN:/Applications/flameshot.app/Contents/MacOS/
-
-# export JAVA_HOME=/usr/lib/jvm/default-runtime
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -143,10 +113,6 @@ export REQUESTS_CA_BUNDLE=~/Documents/proxyCA.crt
 # Using az binary when behind corporate proxy
 alias azp='export REQUESTS_CA_BUNDLE=/opt/homebrew/Cellar/azure-cli/2.57.0/libexec/lib/python3.11/site-packages/certifi/cacert.pem'
 
-# KeepassXC using password from local gpg via pass binary
-alias klist='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/keepassxc-toth.kdbx  team'
-alias kadmintoth='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx  "cleaner/Azure Admin-TOTH 20"'
-
 alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
 alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
 
@@ -163,4 +129,11 @@ function git-prune-branches() {
         echo "running pruning of local branches"
         git branch -vv | grep ': gone]'|  grep -v "\*" | awk '{ print $1; }' | xargs -r git branch -D ;
 }
+
+f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
+
+# KeepassXC using password from local gpg via pass binary
+alias kx-list='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/keepassxc-toth.kdbx'
+alias kx-clip='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx'
+
 

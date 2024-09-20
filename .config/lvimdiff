@@ -111,3 +111,20 @@ index e7010a37..15789d92 100644
      -- Move current line / block with Alt-j/k a la vscode.
      ["<A-j>"] = ":m .+1<CR>==",
      ["<A-k>"] = ":m .-2<CR>==",
+diff --git a/lua/lvim/plugins.lua b/lua/lvim/plugins.lua
+index e889a317..25c972ed 100644
+--- a/lua/lvim/plugins.lua
++++ b/lua/lvim/plugins.lua
+@@ -1,6 +1,12 @@
+ -- local require = require("lvim.utils.require").require
+ local core_plugins = {
+   { "folke/lazy.nvim", tag = "stable" },
++  {
++    "iamcco/markdown-preview.nvim",
++    config = function()
++      vim.fn["mkdp#util#install"]()
++    end,
++  },
+   {
+     "neovim/nvim-lspconfig",
+     lazy = true,
