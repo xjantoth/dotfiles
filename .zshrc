@@ -140,3 +140,9 @@ alias gd='git diff ORIG_HEAD..'
 # When Python has a problem with SSL Certificate interceotion
 export REQUESTS_CA_BUNDLE=~/Documents/proxyCA.crt
 
+# Using az binary when behind corporate proxy
+alias azp='export REQUESTS_CA_BUNDLE=/opt/homebrew/Cellar/azure-cli/2.57.0/libexec/lib/python3.11/site-packages/certifi/cacert.pem'
+
+# KeepassXC using password from local gpg via pass binary
+alias klist='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/keepassxc-toth.kdbx  team'
+alias kadmintoth='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx  "cleaner/Azure Admin-TOTH 20"'
