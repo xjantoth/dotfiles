@@ -134,10 +134,14 @@ function tmux-crowler ()
 {
   tmux new-session -s "mac" -n work -d
 
-  tmux new-window -t "mac:2" -n "~" -c "${HOME}";
+  tmux new-window -t "mac:2" -n "home" -c "${HOME}";
   tmux select-pane -t "mac:2" -U;
+  tmux new-window -t "mac:3" -n "home" -c "${HOME}/Documents";
+  tmux select-pane -t "mac:3" -U;
+  tmux new-window -t "mac:4" -n "home" -c "${HOME}/Downloads";
+  tmux select-pane -t "mac:4" -U;
 
-  for i in  $(ls -d ~/Documents/work/*/ | nl -v3 -s:); do
+  for i in  $(ls -d ~/Documents/work/*/ | nl -v5 -s:); do
     wdir=${i##*:}
     DIR=${wdir%/*}
     tmux new-window -t "mac:${i%:*}" -n "${DIR}" -c "${DIR}";
@@ -150,6 +154,32 @@ function tmux-crowler ()
 
 f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
 
+sol(){
+  for i in $(find . -type f -name "RI*.yaml" | xargs -I % sh -c 'echo %'); do 
+    FN=${i##*/}; 
+    name=$(yq -o json eval $i | jq -r '[(.solution_name),(.use_case // ""),(if .suffix then .suffix|tostring else "0" end)]| map(select(length > 0)) | join("-")'); 
+    oo=${${i##*organization/}%%/*}; 
+    if [[ "$oo" == *"dev"* ]]; then org="deaut"; else org="eaut"; fi; 
+
+    case $1 in
+    name)
+      var=${FN}:
+      ;;
+
+    path)
+      var=${i}:
+      ;;
+
+    *)
+      var=""
+      ;;
+    esac
+
+    project_name="$org-${${i##*environments/}%%/*}-$name"; 
+    echo "${var}${project_name}"
+
+  done
+}
 
 # open_file creates and opens a file in the specified directory
 hp() {
@@ -196,3 +226,6 @@ alias kx-clip='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/
 
 # Gcloud host
 # gcloud config set auth/token_host https://oauth2-eautsc.p.googleapis.com/token
+# v organization/*/*/*/*/XZY*.yaml
+# :bufdo exe "g/bigtable.googleapis.com/d" | update
+
