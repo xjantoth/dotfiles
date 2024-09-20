@@ -46,7 +46,6 @@ binding = { key = "F", mods = "Control|Shift" }
 # regex = '[^ ]*/?[^/]+\.[[:alnum:]]+'
 regex = '([~./]?[-a-zA-Z0-9_+-,./@]+)'
 
-
 [keyboard]
 bindings = [
   { key = "Right", mods = "Alt", chars = "\u001BF" },

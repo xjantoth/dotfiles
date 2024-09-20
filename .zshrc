@@ -1,7 +1,7 @@
 # vi:syntax=sh
 
 HISTFILE=~/.zsh_history
-HISTSIZE=100000
+HISTSIZE=1000000000
 SAVEHIST=1000000000
 setopt appendhistory
 setopt share_history
@@ -11,13 +11,14 @@ autoload -U +X compinit && compinit
 
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /opt/homebrew/share/zsh-autosuggestions/zsh-atuin.zsh
 
 bindkey -e
 #export AWS_ASSUME_ROLE_TTL=1h
 #export AWS_SESSION_TTL=12h
 # export PYTHONPATH=$PYTHONPATH:/usr/lib/python3.9/site-packages
 export BROWSER=/usr/bin/chromium
-export EDITOR=lvim
+export EDITOR=~/.local/bin/lvim
 export LANG=en_US.UTF-8
 
 bindkey '\e[A' history-search-backward
@@ -109,6 +110,7 @@ alias gd='git diff ORIG_HEAD..'
 alias gpp='git push --set-upstream $(git remote show) $(git branch --show-current)'
 alias gp='git pull'
 alias cm='echo "git commit -m \"${${$(git branch --show-current)##*/}:0:8} \""'
+alias ggs='git status'
 # Using az binary when behind corporate proxy
 alias azp='export REQUESTS_CA_BUNDLE=/opt/homebrew/Cellar/azure-cli/2.59.0/libexec/lib/python3.11/site-packages/certifi/cacert.pem'
 
@@ -162,14 +164,20 @@ function tc() {
   CLONED_REPOS="/tmp/cloned-$(date +"%Y-%m-%dT%H:%M:%S").txt"
   find ~/Documents/work -maxdepth 1 -type d | nl -v8 -s: | nl -v8 -s: > "${CLONED_REPOS}"
 
-  PASS=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa password ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-token")
-  SUSER=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa username ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-suser")
-  BITBUCKET_URL=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa url ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-url")
+  # PASS=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa password ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-token")
+  # SUSER=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa username ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-suser")
+  # BITBUCKET_URL=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa url ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-url")
+  PASS=$(security find-generic-password -a $USER -s BITBUCKET-TOKEN -w)
+  SUSER=$(security find-generic-password -a $USER -s BITBUCKET-USER -w)
+  BITBUCKET_URL=$(security find-generic-password -a $USER -s BITBUCKET-URL -w)
 
   for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS GCP-WEBFOCUS GCP-DATAPLATFORM-CUSTOMERINSIGHTS_RETAIL-AT; do 
-    curl -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
+    curl -k -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
+
+  echo "debug ..."
+  cat ${FILE}
 
   # Clone repositories
   while read -r i; do
@@ -185,7 +193,7 @@ function tc() {
   :> ${FILE}
   # Update file after cloning
   for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS GCP-WEBFOCUS GCP-DATAPLATFORM-CUSTOMERINSIGHTS_RETAIL-AT; do 
-    curl -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
+    curl -k -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
 
@@ -314,6 +322,127 @@ $timestamp
    lvim '+ normal 2GzzA' $filename
 }
 
+task() {
+  # set -x
+  JIRA_TOKEN=$(security find-generic-password -a $USER -s JIRA_TOKEN -w)
+  JIRA_URL=$(security find-generic-password -a $USER -s JIRA_URL -w)
+
+  red=`tput setaf 1`
+  green=`tput setaf 2`
+  reset=`tput sgr0`
+
+  if [[ -z "${JIRA_TOKEN}" ]]; then 
+    echo "Missing env. variable JIRA_TOKEN"
+  else
+    CMD=$(echo curl -k --url "https://${JIRA_URL}/rest/api/2/issue" \
+      --header "Authorization: Bearer ${JIRA_TOKEN}" \
+      --header "Accept: application/json" \
+      --header "Content-Type: application/json" \
+      --data '{
+        "fields":
+          {
+            "project": {"key": "CEP"},
+            "summary": "'"${*}"'",
+            "description": "'"${*}"'",
+            "issuetype": {"id": "6"}, 
+            "labels": ["SRE"]
+          }
+        }')
+    
+    echo  "$(echo ${CMD} | sed -E 's/Bearer [a-zA-Z0-9]+/Bearer *****/')"
+    echo
+    echo "Would you like to ${green}execute above cURL${reset} call ${red}[y|Y|yes]${reset} or ${green}[n|no|N]${reset}?"
+    read choice
+
+    case "$choice" in 
+      y|Y|yes|Yes )
+        # set -x
+        echo "Executing."
+        KEY=$(curl -s -k --url "https://${JIRA_URL}/rest/api/2/issue" \
+        --header "Authorization: Bearer ${JIRA_TOKEN}" \
+        --header "Accept: application/json" \
+        --header "Content-Type: application/json" \
+        --data '{
+          "fields":
+            {
+              "project": {"key": "CEP"},
+              "summary": "'"${*}"'",
+              "description": "'"${*}"'",
+              "issuetype": {"id": "6"}, 
+              "labels": ["SRE"]
+            }
+          }' | jq -r '.key')
+        
+        echo "https://jira.s-mxs.net/browse/${KEY}"
+
+        ;;
+      n|N|no ) echo "No cURL call was executed";;
+      * ) echo "invalid";;
+    esac
+  fi
+}
+
+presentation() {
+  # Using MAC OS `security` command to store secrets
+  JIRA_TOKEN=$(security find-generic-password -a $USER -s JIRA_TOKEN -w)
+  JIRA_URL=$(security find-generic-password -a $USER -s JIRA_URL -w)
+
+  if [[ -z "${JIRA_TOKEN}" ]]; then 
+    echo "Missing env. variable JIRA_TOKEN"
+  else
+    red=`tput setaf 1`
+    green=`tput setaf 2`
+    reset=`tput sgr0`
+
+    # JIRA_BOARD="4136" # Horizon Sprint Board identifier
+    JIRA_BOARD="4136" # Horizon Sprint Board identifier
+    JIRA_CURRENT_SPRINT=$(curl -s -k --header 'Accept: application/json' \
+      --header "Authorization: Bearer ${JIRA_TOKEN}" \
+      --request GET --url "https://${JIRA_URL}/rest/agile/1.0/board/${JIRA_BOARD}/sprint?state=active" | jq '.values | .[].id')
+    JIRA_CURRENT_SPRINT_GOAL=$(curl -s -k --header 'Accept: application/json' \
+      --header "Authorization: Bearer ${JIRA_TOKEN}" \
+      --request GET --url "https://${JIRA_URL}/rest/agile/1.0/board/${JIRA_BOARD}/sprint?state=active" | jq -r '.values | .[].goal')
+
+    JIRA_CURRENT_SPRINT_NAME=$(curl -s -k --header 'Accept: application/json' \
+      --header "Authorization: Bearer ${JIRA_TOKEN}" \
+      --request GET --url "https://${JIRA_URL}/rest/agile/1.0/board/${JIRA_BOARD}/sprint?state=active" | jq -r '.values | .[].name')
+
+    export MAX_ENTRIES="1000"
+    
+    echo "${green}Sprint Goal${reset}: ${JIRA_CURRENT_SPRINT_GOAL}"
+    echo "${green}Sprint Name${reset}: ${JIRA_CURRENT_SPRINT_NAME}"
+
+    echo "${green}Stories:${reset}"
+    curl -s -k --header 'Accept: application/json' \
+      --header "Authorization: Bearer ${JIRA_TOKEN}" \
+      --request GET --url "https://${JIRA_URL}/rest/agile/1.0/board/${JIRA_BOARD}/sprint/${JIRA_CURRENT_SPRINT}/issue?startAt=0&maxResults=${MAX_ENTRIES}" | \
+      jq -r '.issues | .[] | select(.fields.issuetype.name=="Story" and .fields.status.statusCategory.name=="Done") |
+          (
+              {
+                "key": ("* " + .key),
+                "summary": (.fields.summary),
+                "assignee": ("[" + .fields.assignee.emailAddress | split(".")[0] + "]")
+              }
+              )' | jq -sr '. |=sort_by(.assignee) | .[] | join(" ")' 
+
+
+    echo "${green}Worth to mention:${reset}"
+    curl -s -k --header 'Accept: application/json' \
+      --header "Authorization: Bearer ${JIRA_TOKEN}" \
+      --request GET --url "https://${JIRA_URL}/rest/agile/1.0/board/${JIRA_BOARD}/sprint/${JIRA_CURRENT_SPRINT}/issue?startAt=0&maxResults=${MAX_ENTRIES}" | \
+      jq -r '.issues | .[] | select(.fields.issuetype.name=="Task") |
+          (
+              {
+                "key": ("* " + .key),
+                "summary": (.fields.summary),
+                "assignee": ("[" + .fields.assignee.emailAddress | split(".")[0] + "]")
+              }
+              )' | jq -sr '. |=sort_by(.assignee) | .[] | join(" ")'
+  fi
+
+}
+
+
 # TMUX requeires now more than 127 windows
 ulimit -n 1024
 
@@ -333,4 +462,10 @@ ulimit -n 1024
 # brew bundle
 # terraform state  mv 'tfe_project.project["azure-deveg_loganalytics"]' 'tfe_project.project["azure-deveg_o365"]'
 #
+#
+export ATUIN_NOBIND="true"
+eval "$(atuin init zsh)"
+
+bindkey '^f' atuin-search
+
 export PATH=/opt/homebrew/anaconda3/bin:$PATH
