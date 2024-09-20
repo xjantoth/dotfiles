@@ -1,4 +1,6 @@
 # themes from https://github.com/alacritty/alacritty-theme
+#git clone https://github.com/alacritty/alacritty-theme.git ~/.config/alacritty/
+#brew install --cask font-hack-nerd-font
 
 import = ["/Users/SMH9A/.config/alacritty/iterm.toml"]
 

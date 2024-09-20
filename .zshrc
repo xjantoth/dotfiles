@@ -148,6 +148,7 @@ alias klist='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/ke
 alias kadmintoth='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx  "cleaner/Azure Admin-TOTH 20"'
 
 alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
+alias gg='git branch | fzf --height=20% --reverse --info=inline | xargs git checkout'
 
 # How to get Primary Proxy Root certificate intercepting each and every reguest behind company proxy
 # openssl s_client -showcerts -connect amazon.de:443 2>/dev/null </dev/null |  sed -ne '/s:CN=EGB SHA2 Primary Proxy Root,/,/-END CERTIFICATE-/p' | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/proxyCA.crt
