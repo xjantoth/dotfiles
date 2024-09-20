@@ -116,6 +116,8 @@ alias lvim='~/.local/bin/lvim'
 alias lt='lvim ~/.local/share/lunarvim/lvim/lua/lvim/core/telescope.lua'
 alias lg='git -C ~/.local/share/lunarvim/lvim diff'
 alias lf='cd ~/.local/share/lunarvim/lvim'
+alias lk='lvim ~/.local/share/lunarvim/lvim/lua/lvim/core/which-key.lua'
+alias lck='lvim ~/.local/share/lunarvim/lvim/lua/lvim/keymappings.lua'
 alias lll='alias | sort | grep "^l"'
 
 alias c='pbcopy <<<$(echo " ¯\_(ツ)_/¯")'
@@ -125,3 +127,7 @@ alias t='lvim ~/.tmux.conf'
 alias dev='cd ~/Documents/work/devopsinuse/'
 alias v='lvim'
 alias s='source ~/.zshrc'
+
+# https://dev.to/jma/using-brewfile-to-automatic-setup-macos-from-scratch-4ok1
+# brew bundle dump
+# brew bundle
