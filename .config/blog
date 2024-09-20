@@ -38,8 +38,9 @@ $timestamp
 " >>$filename
 
 	# Open the file in Neovim
-	lvim '+ normal /^-' $filename
-
+lvim '+ normal /^-' $filename
+cd -
 }
+
 
 open_file $BLOG_PATH

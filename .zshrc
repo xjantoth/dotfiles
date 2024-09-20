@@ -1,7 +1,9 @@
 HISTFILE=~/.zsh_history
 HISTSIZE=100000
-SAVEHIST=100000
+SAVEHIST=1000000000
 setopt appendhistory
+setopt share_history
+setopt inc_append_history
 
 autoload -U +X compinit && compinit
 
