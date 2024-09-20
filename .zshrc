@@ -251,16 +251,12 @@ ww(){
       --bind 'enter:become(lvim {1} +{2})'
 }
 
+
 solution(){
 
-  for i in $(find . -type f -name "RI*.yaml" | xargs -I % sh -c 'echo %'); do 
+  for i in $(find ./organization/*/environments/*/projects -type f -name "*.yaml" | xargs -I % sh -c 'echo %'); do 
     FN=${i##*/}; 
-    name=$(yq -o json eval $i | jq -r '[(.solution_name),(.use_case // ""),(if .suffix then .suffix|tostring else "0" end)]| map(select(length > 0)) | join("-")'); 
-    oo=${${i##*organization/}%%/*}; 
-    if [[ "$oo" == *"dev"* ]]; then org="deaut"; else org="eaut"; fi; 
-
-    project_name="$org-${${i##*environments/}%%/*}-$name"; 
-    echo "${i} ${project_name}"
+    echo "${i}"
 
   # done | fzf --preview 'bat {1}' | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy'
   done > /tmp/solutions.txt
@@ -276,12 +272,11 @@ solution(){
       --color "hl:-1:underline,hl+:-1:underline:reverse" \
       --prompt '1. ripgrep> ' \
       --delimiter ': ' \
-      --preview 'bat --color=always -l yaml $(echo {1} | grep -oE "\.\/.*\s")' \
+      --preview 'bat --color=always -l yaml $(FILE={1}; echo ${FILE#*/})' \
       --preview-window 'up,80%,border-bottom,+{2}+3/3,~3' \
-      --bind 'enter:become(lvim $(echo {1} | grep -oE "\.\/.*\s"); echo $(echo {1} | grep -oE "\.\/.*\s"); echo $(echo {1} | grep -oE "\.\/.*\s") | pbcopy)'
+      --bind 'enter:become(lvim $(FILE={1}; echo ${FILE#*/}); echo $(FILE={1}; echo ${FILE#*/}); echo $(FILE={1}; echo ${FILE#*/}) | pbcopy)'
     
 }
-
 # open_file creates and opens a file in the specified directory
 hp() {
   local PWD=$HOME/Documents/work/devopsinuse/hugo/content/english/blog
@@ -319,6 +314,7 @@ $timestamp
    lvim '+ normal 2GzzA' $filename
 }
 
+# TMUX requeires now more than 127 windows
 ulimit -n 1024
 
 # Gcloud host
@@ -337,3 +333,4 @@ ulimit -n 1024
 # brew bundle
 # terraform state  mv 'tfe_project.project["azure-deveg_loganalytics"]' 'tfe_project.project["azure-deveg_o365"]'
 #
+export PATH=/opt/homebrew/anaconda3/bin:$PATH
