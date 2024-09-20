@@ -79,11 +79,26 @@ index b701f7e4..4520806d 100644
        vimgrep_arguments = {
          "rg",
          "--color=never",
+diff --git a/lua/lvim/core/which-key.lua b/lua/lvim/core/which-key.lua
+index 2ab47b05..1a75082f 100644
+--- a/lua/lvim/core/which-key.lua
++++ b/lua/lvim/core/which-key.lua
+@@ -106,7 +106,9 @@ M.config = function()
+       [";"] = { "<cmd>Alpha<CR>", "Dashboard" },
+       ["w"] = { "<cmd>w!<CR>", "Save" },
+       ["q"] = { "<cmd>confirm q<CR>", "Quit" },
+-      ["/"] = { "<Plug>(comment_toggle_linewise_current)", "Comment toggle current line" },
++      --["/"] = { "<Plug>(comment_toggle_linewise_current)", "Comment toggle current line" },
++      ["/"] = {  "<cmd>Telescope live_grep<cr>", "Text"  },
++      ["<Space>"] = { "<cmd>Telescope find_files<cr>", "Find File" },
+       ["c"] = { "<cmd>BufferKill<CR>", "Close Buffer" },
+       ["f"] = {
+         function()
 diff --git a/lua/lvim/keymappings.lua b/lua/lvim/keymappings.lua
-index e7010a37..fdb05e23 100644
+index e7010a37..15789d92 100644
 --- a/lua/lvim/keymappings.lua
 +++ b/lua/lvim/keymappings.lua
-@@ -58,6 +58,13 @@ local defaults = {
+@@ -58,6 +58,12 @@ local defaults = {
      ["<C-Left>"] = ":vertical resize -2<CR>",
      ["<C-Right>"] = ":vertical resize +2<CR>",
  
@@ -92,7 +107,6 @@ index e7010a37..fdb05e23 100644
 +    ["<S-l>"] = ":bnext<CR>",
 +    ["<S-h>"] = ":bprev<CR>",
 +    ["<S-f>"] = ":lua vim.lsp.buf.format()<CR>",
-+
 +
      -- Move current line / block with Alt-j/k a la vscode.
      ["<A-j>"] = ":m .+1<CR>==",

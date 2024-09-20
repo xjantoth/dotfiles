@@ -118,6 +118,7 @@ alias lg='git -C ~/.local/share/lunarvim/lvim diff'
 alias lf='cd ~/.local/share/lunarvim/lvim'
 alias lk='lvim ~/.local/share/lunarvim/lvim/lua/lvim/core/which-key.lua'
 alias lck='lvim ~/.local/share/lunarvim/lvim/lua/lvim/keymappings.lua'
+alias lgdiff='git -C ~/.local/share/lunarvim/lvim diff > ~/.config/lvimdiff'
 alias lll='alias | sort | grep "^l"'
 
 alias c='pbcopy <<<$(echo " ¯\_(ツ)_/¯")'
