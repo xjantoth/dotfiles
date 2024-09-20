@@ -122,18 +122,77 @@ alias tt='tmux list-windows | fzf | cut -d: -f1 | xargs tmux select-window -t'
 # openssl s_client -showcerts -connect amazon.de:443 2>/dev/null </dev/null |  sed -ne '/s:CN=EGB SHA2 Primary Proxy Root,/,/-END CERTIFICATE-/p' | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/proxyCA.crt
 #
 function git-prune-branches() {
-        echo "switching to master or main branch.."
-        git branch | grep 'main\|master' | xargs -n 1 git checkout
-        echo "fetching with -p option...";
-        git fetch -p;
-        echo "running pruning of local branches"
-        git branch -vv | grep ': gone]'|  grep -v "\*" | awk '{ print $1; }' | xargs -r git branch -D ;
+  echo "switching to master or main branch.."
+  git branch | grep 'main\|master' | xargs -n 1 git checkout
+  echo "fetching with -p option...";
+  git fetch -p;
+  echo "running pruning of local branches"
+  git branch -vv | grep ': gone]'|  grep -v "\*" | awk '{ print $1; }' | xargs -r git branch -D ;
+}
+
+function tmux-crowler ()
+{
+  tmux new-session -s "mac" -n work -d
+
+  tmux new-window -t "mac:2" -n "~" -c "${HOME}";
+  tmux select-pane -t "mac:2" -U;
+
+  for i in  $(ls -d ~/Documents/work/*/ | nl -v3 -s:); do
+    wdir=${i##*:}
+    DIR=${wdir%/*}
+    tmux new-window -t "mac:${i%:*}" -n "${DIR}" -c "${DIR}";
+    tmux split-window -t "mac:${i%:*}" -v -c "#{pane_current_path}" -l '14%';
+    tmux select-pane -t "mac:${i%:*}" -U;
+  done
+  
+
 }
 
 f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
+
+
+# open_file creates and opens a file in the specified directory
+hp() {
+  local PWD=$HOME/Documents/work/devopsinuse/hugo/content/english/blog
+
+  echo -n "Enter a filename: "
+  read REPLY
+  title=$REPLY
+	date=$(date +"%Y-%m-%dT%H:%M:%S%z")
+	timestamp="$(date +"%Y%m%d%H%m")"
+	# Cd into the directory
+	# Create the file in the specified directory
+	filename=$PWD/$(echo $title | tr " " "-").md
+	touch $filename
+
+	echo -e "---
+title: $title
+date: $date
+lastmod: $date
+draft: false
+description: $title
+image: \"images/blog/linux-1.jpg\"
+author: \"Jan Toth\"
+tags:
+  - bash
+  - devopsinuse
+---
+
+
+## Links:
+
+$timestamp
+" >>$filename
+
+	# Open the file in Neovim
+   lvim '+ normal 2GzzA' $filename
+
+}
+
 
 # KeepassXC using password from local gpg via pass binary
 alias kx-list='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/keepassxc-toth.kdbx'
 alias kx-clip='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx'
 
-
+# Gcloud host
+# gcloud config set auth/token_host https://oauth2-eautsc.p.googleapis.com/token
