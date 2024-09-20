@@ -53,7 +53,7 @@ index 1f190f27..460afe6f 100644
  end
  
 diff --git a/lua/lvim/core/telescope.lua b/lua/lvim/core/telescope.lua
-index b701f7e4..4520806d 100644
+index b701f7e4..610da334 100644
 --- a/lua/lvim/core/telescope.lua
 +++ b/lua/lvim/core/telescope.lua
 @@ -20,8 +20,20 @@ function M.config()
@@ -79,6 +79,14 @@ index b701f7e4..4520806d 100644
        vimgrep_arguments = {
          "rg",
          "--color=never",
+@@ -133,6 +145,7 @@ function M.setup()
+   if lvim.builtin.project.active then
+     pcall(function()
+       require("telescope").load_extension "projects"
++      require('telescope').load_extension('media_files')
+     end)
+   end
+ 
 diff --git a/lua/lvim/core/which-key.lua b/lua/lvim/core/which-key.lua
 index 2ab47b05..1a75082f 100644
 --- a/lua/lvim/core/which-key.lua
@@ -113,13 +121,16 @@ index e7010a37..624e7dc0 100644
      ["<A-j>"] = ":m .+1<CR>==",
      ["<A-k>"] = ":m .-2<CR>==",
 diff --git a/lua/lvim/plugins.lua b/lua/lvim/plugins.lua
-index e889a317..25c972ed 100644
+index e889a317..1f658684 100644
 --- a/lua/lvim/plugins.lua
 +++ b/lua/lvim/plugins.lua
-@@ -1,6 +1,12 @@
+@@ -1,6 +1,15 @@
  -- local require = require("lvim.utils.require").require
  local core_plugins = {
    { "folke/lazy.nvim", tag = "stable" },
++  {'nvim-lua/popup.nvim'},
++  {'nvim-lua/plenary.nvim'},
++  {'nvim-telescope/telescope-media-files.nvim'},
 +  {
 +    "iamcco/markdown-preview.nvim",
 +    config = function()

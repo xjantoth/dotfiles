@@ -87,7 +87,7 @@ alias vim='~/.local/bin/lvim'
 alias lvim='~/.local/bin/lvim'
 alias lt='lvim ~/.local/share/lunarvim/lvim/lua/lvim/core/telescope.lua'
 alias lg='git -C ~/.local/share/lunarvim/lvim diff'
-alias lf='cd ~/.local/share/lunarvim/lvim'
+alias lff='cd ~/.local/share/lunarvim/lvim'
 alias lk='lvim ~/.local/share/lunarvim/lvim/lua/lvim/core/which-key.lua'
 alias lck='lvim ~/.local/share/lunarvim/lvim/lua/lvim/keymappings.lua'
 alias lgdiff='git -C ~/.local/share/lunarvim/lvim diff > ~/.config/lvimdiff'
@@ -131,6 +131,12 @@ ggo() {
    open ${${${${${${$(git remote get-url origin)#*@}/:7999/}/.git/}/\//\/projects\/}/%$repo_name/repos\/$repo_name}/#/https:\/\/}
 }
 
+b(){
+  # Search through Chrome bookmarks using jq and fzf
+   open "$(echo $(cat   ~/Library/Application\ Support/Google/Chrome/Default/Bookmarks | \
+     jq -r '.roots.bookmark_bar.children | .[] | [.name, .url] | join(" ")' |  fzf)|  awk '{print $NF}')"
+}
+
 
 # When Python has a problem with SSL Certificate interceotion
 export REQUESTS_CA_BUNDLE=~/Documents/proxyCA.crt
@@ -157,7 +163,7 @@ function tc() {
   SUSER=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa username ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-suser")
   BITBUCKET_URL=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa url ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-url")
 
-  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS; do 
+  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS GCP-WEBFOCUS GCP-DATAPLATFORM-CUSTOMERINSIGHTS_RETAIL-AT; do 
     curl -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
@@ -175,7 +181,7 @@ function tc() {
 
   :> ${FILE}
   # Update file after cloning
-  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS; do 
+  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS GCP-WEBFOCUS GCP-DATAPLATFORM-CUSTOMERINSIGHTS_RETAIL-AT; do 
     curl -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
@@ -242,7 +248,7 @@ ww(){
       --bind 'enter:become(lvim {1} +{2})'
 }
 
-isolution(){
+solution(){
 
   for i in $(find . -type f -name "RI*.yaml" | xargs -I % sh -c 'echo %'); do 
     FN=${i##*/}; 
@@ -268,35 +274,9 @@ isolution(){
       --prompt '1. ripgrep> ' \
       --delimiter ': ' \
       --preview 'bat --color=always -l yaml $(echo {1} | grep -oE "\.\/.*\s")' \
-      --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
-      --bind 'enter:become(lvim $(echo {1} | grep -oE "\.\/.*\s"))'
-}
-
-solution(){
-  for i in $(find . -type f -name "RI*.yaml" | xargs -I % sh -c 'echo %'); do 
-    FN=${i##*/}; 
-    name=$(yq -o json eval $i | jq -r '[(.solution_name),(.use_case // ""),(if .suffix then .suffix|tostring else "0" end)]| map(select(length > 0)) | join("-")'); 
-    oo=${${i##*organization/}%%/*}; 
-    if [[ "$oo" == *"dev"* ]]; then org="deaut"; else org="eaut"; fi; 
-
-    case $1 in
-    name)
-      var=${FN}:
-      ;;
-
-    path)
-      var=${i}:
-      ;;
-
-    *)
-      var=""
-      ;;
-    esac
-
-    project_name="$org-${${i##*environments/}%%/*}-$name"; 
-    echo "${var}${project_name}"
-
-  done
+      --preview-window 'up,80%,border-bottom,+{2}+3/3,~3' \
+      --bind 'enter:become(lvim $(echo {1} | grep -oE "\.\/.*\s"); echo $(echo {1} | grep -oE "\.\/.*\s"); echo $(echo {1} | grep -oE "\.\/.*\s") | pbcopy)'
+    
 }
 
 # open_file creates and opens a file in the specified directory
