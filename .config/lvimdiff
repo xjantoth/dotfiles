@@ -1,5 +1,5 @@
 diff --git a/lua/lvim/config/defaults.lua b/lua/lvim/config/defaults.lua
-index 5fa8a912..cf39d8ba 100644
+index 5fa8a91..cf39d8b 100644
 --- a/lua/lvim/config/defaults.lua
 +++ b/lua/lvim/config/defaults.lua
 @@ -2,7 +2,7 @@ return {
@@ -12,7 +12,7 @@ index 5fa8a912..cf39d8ba 100644
      ---@usage boolean: format on save (Default: false)
      enabled = false,
 diff --git a/lua/lvim/config/settings.lua b/lua/lvim/config/settings.lua
-index c31a90c0..f9e14829 100644
+index 2492f1d..157dbc2 100644
 --- a/lua/lvim/config/settings.lua
 +++ b/lua/lvim/config/settings.lua
 @@ -17,8 +17,9 @@ M.load_default_options = function()
@@ -24,36 +24,26 @@ index c31a90c0..f9e14829 100644
 +    foldmethod = "expr", -- folding, set to "expr" for treesitter based folding
 +    foldexpr = "nvim_treesitter#foldexpr()", -- set to "nvim_treesitter#foldexpr()" for treesitter based folding
 +    foldlevel = 99,
-     guifont = "monospace:h17", -- the font used in graphical neovim applications
      hidden = true, -- required to keep multiple buffers and open multiple buffers
      hlsearch = true, -- highlight all matches on previous search pattern
+     ignorecase = true, -- ignore case in search patterns
 diff --git a/lua/lvim/core/autocmds.lua b/lua/lvim/core/autocmds.lua
-index 1f190f27..460afe6f 100644
+index 641198d..e8f8725 100644
 --- a/lua/lvim/core/autocmds.lua
 +++ b/lua/lvim/core/autocmds.lua
-@@ -169,6 +169,7 @@ end
- 
- function M.enable_format_on_save()
-   local opts = get_format_on_save_opts()
-+
-   vim.api.nvim_create_augroup("lsp_format_on_save", {})
-   vim.api.nvim_create_autocmd("BufWritePre", {
-     group = "lsp_format_on_save",
-@@ -177,6 +178,12 @@ function M.enable_format_on_save()
-       require("lvim.lsp.utils").format { timeout_ms = opts.timeout, filter = opts.filter }
-     end,
-   })
-+  vim.o.autoread = true
-+  vim.api.nvim_create_autocmd({ 'CursorHold', 
-+  'CursorHoldI', 'FocusGained' }, {
-+        command = "if mode() != 'c' | checktime | endif",
-+        pattern = { '*' },
-+  })
-   Log:debug "enabled format-on-save"
- end
- 
+@@ -12,6 +12,10 @@ function M.load_defaults()
+         desc = "Highlight text on yank",
+         callback = function()
+           vim.highlight.on_yank { higroup = "Search", timeout = 100 }
++          vim.cmd([[
++          let a = join(getreg('0', 1, 1)[:])
++          :silent exe "!echo '" . a . "' | tmux load-buffer -"
++          ]])
+         end,
+       },
+     },
 diff --git a/lua/lvim/core/telescope.lua b/lua/lvim/core/telescope.lua
-index b701f7e4..610da334 100644
+index b701f7e..610da33 100644
 --- a/lua/lvim/core/telescope.lua
 +++ b/lua/lvim/core/telescope.lua
 @@ -20,8 +20,20 @@ function M.config()
@@ -88,10 +78,10 @@ index b701f7e4..610da334 100644
    end
  
 diff --git a/lua/lvim/core/which-key.lua b/lua/lvim/core/which-key.lua
-index 2ab47b05..1a75082f 100644
+index ab548d9..c349357 100644
 --- a/lua/lvim/core/which-key.lua
 +++ b/lua/lvim/core/which-key.lua
-@@ -106,7 +106,9 @@ M.config = function()
+@@ -111,7 +111,9 @@ M.config = function()
        [";"] = { "<cmd>Alpha<CR>", "Dashboard" },
        ["w"] = { "<cmd>w!<CR>", "Save" },
        ["q"] = { "<cmd>confirm q<CR>", "Quit" },
@@ -103,7 +93,7 @@ index 2ab47b05..1a75082f 100644
        ["f"] = {
          function()
 diff --git a/lua/lvim/keymappings.lua b/lua/lvim/keymappings.lua
-index e7010a37..624e7dc0 100644
+index e7010a3..624e7dc 100644
 --- a/lua/lvim/keymappings.lua
 +++ b/lua/lvim/keymappings.lua
 @@ -58,6 +58,13 @@ local defaults = {
@@ -121,7 +111,7 @@ index e7010a37..624e7dc0 100644
      ["<A-j>"] = ":m .+1<CR>==",
      ["<A-k>"] = ":m .-2<CR>==",
 diff --git a/lua/lvim/plugins.lua b/lua/lvim/plugins.lua
-index e889a317..1f658684 100644
+index ac45a76..95e9f43 100644
 --- a/lua/lvim/plugins.lua
 +++ b/lua/lvim/plugins.lua
 @@ -1,6 +1,15 @@
