@@ -242,6 +242,36 @@ ww(){
       --bind 'enter:become(lvim {1} +{2})'
 }
 
+isolution(){
+
+  for i in $(find . -type f -name "RI*.yaml" | xargs -I % sh -c 'echo %'); do 
+    FN=${i##*/}; 
+    name=$(yq -o json eval $i | jq -r '[(.solution_name),(.use_case // ""),(if .suffix then .suffix|tostring else "0" end)]| map(select(length > 0)) | join("-")'); 
+    oo=${${i##*organization/}%%/*}; 
+    if [[ "$oo" == *"dev"* ]]; then org="deaut"; else org="eaut"; fi; 
+
+    project_name="$org-${${i##*environments/}%%/*}-$name"; 
+    echo "${i} ${project_name}"
+
+  # done | fzf --preview 'bat {1}' | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy'
+  done > /tmp/solutions.txt
+  
+  export BAT_THEME='gruvbox-dark'
+  RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case < /tmp/solutions.txt"
+
+  INITIAL_QUERY="${*:-}"
+  : | fzf --ansi --disabled --query "$INITIAL_QUERY" \
+      --bind "start:reload:$RG_PREFIX {q}" \
+      --bind "change:reload:sleep 0.1; $RG_PREFIX {q} || true" \
+      --bind "alt-enter:unbind(change,alt-enter)+change-prompt(2. fzf> )+enable-search+clear-query" \
+      --color "hl:-1:underline,hl+:-1:underline:reverse" \
+      --prompt '1. ripgrep> ' \
+      --delimiter ': ' \
+      --preview 'bat --color=always -l yaml $(echo {1} | grep -oE "\.\/.*\s")' \
+      --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
+      --bind 'enter:become(lvim $(echo {1} | grep -oE "\.\/.*\s"))'
+}
+
 solution(){
   for i in $(find . -type f -name "RI*.yaml" | xargs -I % sh -c 'echo %'); do 
     FN=${i##*/}; 
