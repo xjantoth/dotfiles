@@ -373,7 +373,7 @@ task() {
             }
           }' | jq -r '.key')
         
-        echo "https://jira.s-mxs.net/browse/${KEY}"
+        echo "https://${JIRA_URL}/browse/${KEY}"
 
         ;;
       n|N|no ) echo "No cURL call was executed";;
