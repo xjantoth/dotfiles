@@ -1,0 +1,19 @@
+# themes from https://github.com/alacritty/alacritty-theme
+
+import = ["/Users/SMH9A/.config/alacritty/iterm.toml"]
+
+[font]
+size = 16
+
+[font.normal]
+family = "Monaco Nerd Font Mono"
+
+# [window]
+# decorations = "none"
+
+[window.padding]
+x = 7
+y = 3
+
+[window]
+opacity = 0.95
