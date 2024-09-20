@@ -1,3 +1,5 @@
+# vi:syntax=bash
+
 HISTFILE=~/.zsh_history
 HISTSIZE=100000
 SAVEHIST=1000000000
@@ -113,7 +115,7 @@ alias azp='export REQUESTS_CA_BUNDLE=/opt/homebrew/Cellar/azure-cli/2.57.0/libex
 alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
 alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
 alias ss="tmux list-windows -F '#I #W' | fzf | cut -d' ' -f1 | xargs tmux select-window -t"
-
+alias dots='open https://github.com/xjantoth/dotfiles'
 
 # To detect duplicates in yaml list
 # yq -o=json eval  data/prod/root.yaml | jq '.ldap.ldap.members  | group_by(.) | map(select(length>1) | .[0])'
@@ -146,6 +148,7 @@ function git-prune-branches() {
 }
 
 function tc() {
+  # set -xT
   FILE="/tmp/$(date +"%Y-%m-%dT%H:%M:%S").txt"
   CLONED_REPOS="/tmp/cloned-$(date +"%Y-%m-%dT%H:%M:%S").txt"
   find ~/Documents/work -maxdepth 1 -type d | nl -v8 -s: | nl -v8 -s: > "${CLONED_REPOS}"
@@ -158,14 +161,24 @@ function tc() {
     curl -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
+
+  # Clone repositories
   while read -r i; do
     repo="${i##*/}"
     if [[ "$(grep -E "${repo}" "${CLONED_REPOS}")" == "" ]]; then
       full="${i// /-}"
       lpath="${repo// /-}"
-      echo "git clone ssh://git@${BITBUCKET_URL}:8000/${full}.git ~/Documents/work/${lpath}"
+      echo "git clone ssh://git@${BITBUCKET_URL}:7999/${full}.git ~/Documents/work/${lpath}"
+      git clone ssh://git@${BITBUCKET_URL}:7999/${full}.git ~/Documents/work/${lpath}
     fi
   done < "${FILE}"
+
+  :> ${FILE}
+  # Update file after cloning
+  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS; do 
+    curl -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
+      | sed 's|^|'"$i/"'|' >> ${FILE}; 
+  done
 
   tmux new-session -s "mac" -n work -d
 
