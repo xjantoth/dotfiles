@@ -1,0 +1,45 @@
+#!/bin/bash
+
+BLOG_PATH=$HOME/Documents/work/devopsinuse/hugo/content/english/blog
+# get_filename prompts the user for a filename
+get_filename() {
+	read -p "Enter a filename: " title
+}
+
+# open_file creates and opens a file in the specified directory
+open_file() {
+	get_filename
+
+	date=$(date +"%Y-%m-%dT%H:%M:%S%z")
+	timestamp="$(date +"%Y%m%d%H%m")"
+	# Cd into the directory
+	cd "$1" || exit
+	# Create the file in the specified directory
+	filename=$1/$(echo $title | tr " " "-").md
+	touch $filename
+
+	echo -e "---
+title: $title
+date: $date
+lastmod: $date
+draft: false
+description: $title
+image: \"images/blog/linux-1.jpg\"
+author: \"Jan Toth\"
+tags:
+  - bash
+  - devopsinuse
+---
+
+
+## Links:
+
+$timestamp
+" >>$filename
+
+	# Open the file in Neovim
+	lvim '+ normal /^-' $filename
+
+}
+
+open_file $BLOG_PATH
