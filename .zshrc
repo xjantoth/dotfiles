@@ -129,6 +129,12 @@ alias dev='cd ~/Documents/work/devopsinuse/'
 alias v='lvim'
 alias s='source ~/.zshrc'
 
+alias gd='git diff ORIG_HEAD..'
+
 # https://dev.to/jma/using-brewfile-to-automatic-setup-macos-from-scratch-4ok1
 # brew bundle dump
 # brew bundle
+#
+# When Python has a problem with SSL Certificate interceotion
+export REQUESTS_CA_BUNDLE=~/Documents/proxyCA.crt
+
