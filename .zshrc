@@ -96,27 +96,38 @@ alias p='lvim ~/.config/nvim/lua/plugins/example.lua'
 alias z='lvim ~/.zshrc'
 alias t='lvim ~/.tmux.conf'
 alias dev='cd ~/Documents/work/devopsinuse/'
+
 alias v='lvim'
 alias s='source ~/.zshrc'
+# KeepassXC using password from local gpg via pass binary
+alias kx-list='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/keepassxc-toth.kdbx'
+alias kx-clip='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx'
 
 alias gd='git diff ORIG_HEAD..'
 alias gpp='git push --set-upstream $(git remote show) $(git branch --show-current)'
-
-# https://dev.to/jma/using-brewfile-to-automatic-setup-macos-from-scratch-4ok1
-# brew bundle dump
-# brew bundle
-#
-# When Python has a problem with SSL Certificate interceotion
-export REQUESTS_CA_BUNDLE=~/Documents/proxyCA.crt
-
+alias gp='git pull'
+alias cm='echo "git commit -m \"${${$(git branch --show-current)##*/}:0:8} \""'
 # Using az binary when behind corporate proxy
 alias azp='export REQUESTS_CA_BUNDLE=/opt/homebrew/Cellar/azure-cli/2.57.0/libexec/lib/python3.11/site-packages/certifi/cacert.pem'
 
 alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
 alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
-
-
 alias ss='tmux list-windows | fzf | cut -d: -f1 | xargs tmux select-window -t'
+
+cme() {git commit -m \""${${$(git branch --show-current)##*/}:0:8} ${*}"\"}
+f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
+vs(){ fzf | xargs -I % sh -c 'code %; echo %; echo % | pbcopy' }
+
+ggo() {
+   # Opens Bitbucket URL in a Web Browser based on `git remote -v command` like command
+   repo_name=$(basename ${${${${$(git remote get-url origin)#*@}/:7999/}/.git/}/\//\/projects\/})
+   open ${${${${${${$(git remote get-url origin)#*@}/:7999/}/.git/}/\//\/projects\/}/%$repo_name/repos\/$repo_name}/#/https:\/\/}
+}
+
+
+# When Python has a problem with SSL Certificate interceotion
+export REQUESTS_CA_BUNDLE=~/Documents/proxyCA.crt
+
 # How to get Primary Proxy Root certificate intercepting each and every reguest behind company proxy
 # openssl s_client -showcerts -connect amazon.de:443 2>/dev/null </dev/null |  sed -ne '/s:CN=EGB SHA2 Primary Proxy Root,/,/-END CERTIFICATE-/p' | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/proxyCA.crt
 #
@@ -129,8 +140,17 @@ function git-prune-branches() {
   git branch -vv | grep ': gone]'|  grep -v "\*" | awk '{ print $1; }' | xargs -r git branch -D ;
 }
 
-function tmux-crowler ()
-{
+function tc () {
+  FILE=/tmp/$(date +"%Y-%m-%dT%H:%M:%S").txt
+  PASS=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa password ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-token")
+  SUSER=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa username ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-suser")
+  BITBUCKET_URL=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa url ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-url")
+
+  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON; do 
+    curl -s -u "${SUSER}:$PASS" -X GET "${BITBUCKET_URL}/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
+      | sed 's|^|'"$i/"'|' >> ${FILE}; 
+  done
+
   tmux new-session -s "mac" -n work -d
 
   tmux new-window -t "mac:2" -n "home" -c "${HOME}";
@@ -141,17 +161,21 @@ function tmux-crowler ()
   tmux new-window -t "mac:7" -n "tmp" -c "/tmp";
 
   for i in  $(ls -d ~/Documents/work/*/ | nl -v8 -s:); do
-    wdir=${i##*:}
-    DIR=${wdir%/*}
-    tmux new-window -t "mac:${i%:*}" -n "${DIR}" -c "${DIR}";
+
+    real_wdir=${${i##*:}%/*}
+    fancy_wdir=$(grep -E "/${real_wdir##*/}$" $FILE)
+
+    if [[ "$fancy_wdir" == "" ]]; then
+      name=${real_wdir##*/}
+    else
+      name=$fancy_wdir
+    fi
+
+    tmux new-window -t "mac:${i%:*}" -n "${name}" -c "${real_wdir}";
     tmux split-window -t "mac:${i%:*}" -v -c "#{pane_current_path}" -l '14%';
     tmux select-pane -t "mac:${i%:*}" -U;
   done
-  
-
 }
-
-f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
 
 solution(){
   for i in $(find . -type f -name "RI*.yaml" | xargs -I % sh -c 'echo %'); do 
@@ -215,20 +239,21 @@ $timestamp
 
 	# Open the file in Neovim
    lvim '+ normal 2GzzA' $filename
-
 }
 
 
-# KeepassXC using password from local gpg via pass binary
-alias kx-list='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/keepassxc-toth.kdbx'
-alias kx-clip='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx'
-alias cm='echo "git commit -m \"${${$(git branch --show-current)##*/}:0:8} \""'
-cme() {git commit -m \""${${$(git branch --show-current)##*/}:0:8} ${*}"\"}
-
-alias gp='git pull'
 # Gcloud host
 # gcloud config set auth/token_host https://oauth2-eautsc.p.googleapis.com/token
 # v organization/*/*/*/*/XZY*.yaml
 # :bufdo exe "g/bigtable.googleapis.com/d" | update
 # cat JIRA....csv  | python3 -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' | jq -r '.[] | select(.Status=="Done" and ."Issue Type"=="Story") | [(."Issue key", .Summary, .Status, .Assignee)] | join(" ")'
 
+
+#curl -u "<s-user>:$(echo $(pass keepassxc-password) | keepassxc-cli show -sa password ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-token")" -X GET "https://stash.s-mxs.net/rest/api/1.0/projects/HORIZON/repos?limit=100" | jq '.values|.[]|.name'
+# yq -o=json eval  data/prod/azure-eg.yaml | jq '.workspaces | [keys[] as $k | {($k): .[$k]["vcs_repo"].identifier}] | add'
+
+
+# https://dev.to/jma/using-brewfile-to-automatic-setup-macos-from-scratch-4ok1
+# brew bundle dump
+# brew bundle
+# terraform state  mv 'tfe_project.project["azure-deveg_loganalytics"]' 'tfe_project.project["azure-deveg_o365"]'
