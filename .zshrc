@@ -469,3 +469,17 @@ eval "$(atuin init zsh)"
 bindkey '^f' atuin-search
 
 export PATH=/opt/homebrew/anaconda3/bin:$PATH
+
+
+# ********************************************************************************** 
+# **** How to change wrong author and email address at all commits at current branch
+# ********************************************************************************** 
+#
+# dotfiles config --local -l
+# dotfiles config user.name "xjantoth"
+# dotfiles config user.email "toth.janci@gmail.com"
+# dotfiles config --local -l
+# dotfiles rebase --root --exec "git commit --amend --no-edit --date 'now' --reset-author"
+# dotfiles log
+# dotfiles push -f
+
