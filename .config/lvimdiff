@@ -95,10 +95,10 @@ index 2ab47b05..1a75082f 100644
        ["f"] = {
          function()
 diff --git a/lua/lvim/keymappings.lua b/lua/lvim/keymappings.lua
-index e7010a37..15789d92 100644
+index e7010a37..624e7dc0 100644
 --- a/lua/lvim/keymappings.lua
 +++ b/lua/lvim/keymappings.lua
-@@ -58,6 +58,12 @@ local defaults = {
+@@ -58,6 +58,13 @@ local defaults = {
      ["<C-Left>"] = ":vertical resize -2<CR>",
      ["<C-Right>"] = ":vertical resize +2<CR>",
  
@@ -107,6 +107,7 @@ index e7010a37..15789d92 100644
 +    ["<S-l>"] = ":bnext<CR>",
 +    ["<S-h>"] = ":bprev<CR>",
 +    ["<S-f>"] = ":lua vim.lsp.buf.format()<CR>",
++    ["<S-t>"] = ":!terraform fmt %<CR>",
 +
      -- Move current line / block with Alt-j/k a la vscode.
      ["<A-j>"] = ":m .+1<CR>==",

@@ -154,7 +154,7 @@ function tc() {
   SUSER=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa username ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-suser")
   BITBUCKET_URL=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa url ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-url")
 
-  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON; do 
+  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS; do 
     curl -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
