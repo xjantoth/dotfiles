@@ -1,4 +1,4 @@
-# vi:syntax=bash
+# vi:syntax=sh
 
 HISTFILE=~/.zsh_history
 HISTSIZE=100000
@@ -206,10 +206,11 @@ function tc() {
   done
 }
 
+# https://github.com/junegunn/fzf/blob/master/ADVANCED.md#using-fzf-as-interactive-ripgrep-launcher
 ww(){
   export BAT_THEME='zenburn' # 'gruvbox-dark'
   export BAT_THEME='gruvbox-dark'
-  cd /Users/SMH9A/Documents/work/devopsinuse/hugo/content/english/blog/
+  cd /Users/$(whoami)/Documents/work/devopsinuse/hugo/content/english/blog/
   RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case "
   INITIAL_QUERY="${*:-}"
   : | fzf --ansi --disabled --query "$INITIAL_QUERY" \
