@@ -19,7 +19,7 @@ bindkey -e
 # export PYTHONPATH=$PYTHONPATH:/usr/lib/python3.9/site-packages
 export BROWSER=/usr/bin/chromium
 export VBOX_USB=usbfs
-export EDITOR=nvim
+export EDITOR=lvim
 export NNN_PLUG='p:preview-tui-ext;f:fzopen' 
 export NNN_FIFO='/tmp/nnn.fifo'
 export NNN_BMS='d:~/Documents;w:~/Downloads/'
@@ -72,7 +72,7 @@ source <(kubectl completion zsh)
 alias k=kubectl
 complete -F __start_kubectl k
 
-f(){ fzf | xargs -ro  $EDITOR ; }
+f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
 
 #source /usr/share/fzf/key-bindings.zsh
 #source /usr/share/fzf/completion.zsh
