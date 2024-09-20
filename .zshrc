@@ -133,8 +133,11 @@ ggo() {
 
 b(){
   # Search through Chrome bookmarks using jq and fzf
-   open "$(echo $(cat   ~/Library/Application\ Support/Google/Chrome/Default/Bookmarks | \
-     jq -r '.roots.bookmark_bar.children | .[] | [.name, .url] | join(" ")' |  fzf)|  awk '{print $NF}')"
+   RESULT="$(echo $(cat ~/Library/Application\ Support/Google/Chrome/Default/Bookmarks | \
+     jq -r '.roots.bookmark_bar.children | .[] | [.name, .url] | join(" ")' |  fzf --height=65% )|  awk '{print $NF}')"
+   if [[ "${RESULT}" != "" ]]; then
+     open "${RESULT}"
+   fi
 }
 
 
