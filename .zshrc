@@ -114,6 +114,11 @@ alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
 alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
 alias ss="tmux list-windows -F '#I #W' | fzf | cut -d' ' -f1 | xargs tmux select-window -t"
 
+
+# To detect duplicates in yaml list
+# yq -o=json eval  data/prod/root.yaml | jq '.ldap.ldap.members  | group_by(.) | map(select(length>1) | .[0])'
+# fzf --preview 'bat --color=always {}'
+
 cme() {git commit -m \""${${$(git branch --show-current)##*/}:0:8} ${*}"\"}
 f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
 vs(){ fzf | xargs -I % sh -c 'code %; echo %; echo % | pbcopy' }
@@ -140,16 +145,27 @@ function git-prune-branches() {
   git branch -vv | grep ': gone]'|  grep -v "\*" | awk '{ print $1; }' | xargs -r git branch -D ;
 }
 
-function tc () {
-  FILE=/tmp/$(date +"%Y-%m-%dT%H:%M:%S").txt
+function tc() {
+  FILE="/tmp/$(date +"%Y-%m-%dT%H:%M:%S").txt"
+  CLONED_REPOS="/tmp/cloned-$(date +"%Y-%m-%dT%H:%M:%S").txt"
+  find ~/Documents/work -maxdepth 1 -type d | nl -v8 -s: | nl -v8 -s: > "${CLONED_REPOS}"
+
   PASS=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa password ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-token")
   SUSER=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa username ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-suser")
   BITBUCKET_URL=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa url ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-url")
 
   for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON; do 
-    curl -s -u "${SUSER}:$PASS" -X GET "${BITBUCKET_URL}/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
+    curl -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
+  while read -r i; do
+    repo="${i##*/}"
+    if [[ "$(grep -E "${repo}" "${CLONED_REPOS}")" == "" ]]; then
+      full="${i// /-}"
+      lpath="${repo// /-}"
+      echo "git clone ssh://git@${BITBUCKET_URL}:8000/${full}.git ~/Documents/work/${lpath}"
+    fi
+  done < "${FILE}"
 
   tmux new-session -s "mac" -n work -d
 
@@ -241,6 +257,7 @@ $timestamp
    lvim '+ normal 2GzzA' $filename
 }
 
+ulimit -n 1024
 
 # Gcloud host
 # gcloud config set auth/token_host https://oauth2-eautsc.p.googleapis.com/token
@@ -250,7 +267,6 @@ $timestamp
 # cat JIRA....csv  | python3 -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' | jq -r '.[] | select(.Status=="Done" and ."Issue Type"=="Story") | [(."Issue key", .Summary, .Status, .Assignee)] | join(" ")'
 
 
-#curl -u "<s-user>:$(echo $(pass keepassxc-password) | keepassxc-cli show -sa password ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-token")" -X GET "https://stash.s-mxs.net/rest/api/1.0/projects/HORIZON/repos?limit=100" | jq '.values|.[]|.name'
 # yq -o=json eval  data/prod/azure-eg.yaml | jq '.workspaces | [keys[] as $k | {($k): .[$k]["vcs_repo"].identifier}] | add'
 
 
