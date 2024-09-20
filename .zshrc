@@ -148,7 +148,17 @@ alias klist='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/ke
 alias kadmintoth='echo $(pass keepassxc-password) | keepassxc-cli clip ~/Documents/keepassxc-toth.kdbx  "cleaner/Azure Admin-TOTH 20"'
 
 alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
-alias gg='git branch | fzf --height=20% --reverse --info=inline | xargs git checkout'
+alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
 
 # How to get Primary Proxy Root certificate intercepting each and every reguest behind company proxy
 # openssl s_client -showcerts -connect amazon.de:443 2>/dev/null </dev/null |  sed -ne '/s:CN=EGB SHA2 Primary Proxy Root,/,/-END CERTIFICATE-/p' | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/proxyCA.crt
+#
+function git-prune-branches() {
+        echo "switching to master or main branch.."
+        git branch | grep 'main\|master' | xargs -n 1 git checkout
+        echo "fetching with -p option...";
+        git fetch -p;
+        echo "running pruning of local branches"
+        git branch -vv | grep ': gone]'|  grep -v "\*" | awk '{ print $1; }' | xargs -r git branch -D ;
+}
+
