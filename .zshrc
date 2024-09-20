@@ -112,7 +112,7 @@ alias azp='export REQUESTS_CA_BUNDLE=/opt/homebrew/Cellar/azure-cli/2.57.0/libex
 
 alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
 alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
-alias ss='tmux list-windows | fzf | cut -d: -f1 | xargs tmux select-window -t'
+alias ss="tmux list-windows -F '#I #W' | fzf | cut -d' ' -f1 | xargs tmux select-window -t"
 
 cme() {git commit -m \""${${$(git branch --show-current)##*/}:0:8} ${*}"\"}
 f(){ fzf | xargs -I % sh -c '$EDITOR %; echo %; echo % | pbcopy' }
@@ -246,6 +246,7 @@ $timestamp
 # gcloud config set auth/token_host https://oauth2-eautsc.p.googleapis.com/token
 # v organization/*/*/*/*/XZY*.yaml
 # :bufdo exe "g/bigtable.googleapis.com/d" | update
+
 # cat JIRA....csv  | python3 -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' | jq -r '.[] | select(.Status=="Done" and ."Issue Type"=="Story") | [(."Issue key", .Summary, .Status, .Assignee)] | join(" ")'
 
 
@@ -257,3 +258,4 @@ $timestamp
 # brew bundle dump
 # brew bundle
 # terraform state  mv 'tfe_project.project["azure-deveg_loganalytics"]' 'tfe_project.project["azure-deveg_o365"]'
+#
