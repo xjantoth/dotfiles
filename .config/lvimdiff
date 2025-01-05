@@ -1,5 +1,5 @@
 diff --git a/lua/lvim/config/defaults.lua b/lua/lvim/config/defaults.lua
-index 5fa8a91..cf39d8b 100644
+index 5fa8a912..cf39d8ba 100644
 --- a/lua/lvim/config/defaults.lua
 +++ b/lua/lvim/config/defaults.lua
 @@ -2,7 +2,7 @@ return {
@@ -12,7 +12,7 @@ index 5fa8a91..cf39d8b 100644
      ---@usage boolean: format on save (Default: false)
      enabled = false,
 diff --git a/lua/lvim/config/settings.lua b/lua/lvim/config/settings.lua
-index 2492f1d..157dbc2 100644
+index 2492f1de..157dbc26 100644
 --- a/lua/lvim/config/settings.lua
 +++ b/lua/lvim/config/settings.lua
 @@ -17,8 +17,9 @@ M.load_default_options = function()
@@ -28,22 +28,45 @@ index 2492f1d..157dbc2 100644
      hlsearch = true, -- highlight all matches on previous search pattern
      ignorecase = true, -- ignore case in search patterns
 diff --git a/lua/lvim/core/autocmds.lua b/lua/lvim/core/autocmds.lua
-index 641198d..e8f8725 100644
+index 641198d7..bed73729 100644
 --- a/lua/lvim/core/autocmds.lua
 +++ b/lua/lvim/core/autocmds.lua
-@@ -12,6 +12,10 @@ function M.load_defaults()
+@@ -12,9 +12,33 @@ function M.load_defaults()
          desc = "Highlight text on yank",
          callback = function()
            vim.highlight.on_yank { higroup = "Search", timeout = 100 }
-+          vim.cmd([[
-+          let a = join(getreg('0', 1, 1)[:])
-+          :silent exe "!echo '" . a . "' | tmux load-buffer -"
-+          ]])
++          -- vim.cmd([[
++          -- let a = join(getreg('0', 1, 1)[:])
++          -- :silent exe "!echo '" . a . "' | tmux load-buffer -"
++          -- ]])
          end,
        },
      },
++    -- {
++    --   "TextYankPost",
++    --   {
++    --     group = "_general_settings",
++    --     pattern = "*",
++    --     desc = "Highlight text on yank and share with tmux",
++    --     callback = function()
++    --       -- Highlight on yank
++    --       vim.highlight.on_yank { higroup = "Search", timeout = 100 }
++
++    --       -- Get the yanked text
++    --       local yanked_text = table.concat(vim.fn.getreg('0', 1, true), "\n")
++
++    --       -- Send the text to tmux buffer
++    --       local tmux_command = string.format("tmux load-buffer <<< '%s'", vim.fn.escape(yanked_text, "'"))
++    --       os.execute(tmux_command)
++    --     end,
++    --   },
++    -- },
++
+     {
+       "FileType",
+       {
 diff --git a/lua/lvim/core/telescope.lua b/lua/lvim/core/telescope.lua
-index b701f7e..610da33 100644
+index b701f7e4..610da334 100644
 --- a/lua/lvim/core/telescope.lua
 +++ b/lua/lvim/core/telescope.lua
 @@ -20,8 +20,20 @@ function M.config()
@@ -78,7 +101,7 @@ index b701f7e..610da33 100644
    end
  
 diff --git a/lua/lvim/core/which-key.lua b/lua/lvim/core/which-key.lua
-index ab548d9..c349357 100644
+index ab548d93..c3493570 100644
 --- a/lua/lvim/core/which-key.lua
 +++ b/lua/lvim/core/which-key.lua
 @@ -111,7 +111,9 @@ M.config = function()
@@ -93,10 +116,10 @@ index ab548d9..c349357 100644
        ["f"] = {
          function()
 diff --git a/lua/lvim/keymappings.lua b/lua/lvim/keymappings.lua
-index e7010a3..624e7dc 100644
+index e7010a37..a6d5765a 100644
 --- a/lua/lvim/keymappings.lua
 +++ b/lua/lvim/keymappings.lua
-@@ -58,6 +58,13 @@ local defaults = {
+@@ -58,6 +58,16 @@ local defaults = {
      ["<C-Left>"] = ":vertical resize -2<CR>",
      ["<C-Right>"] = ":vertical resize +2<CR>",
  
@@ -106,19 +129,63 @@ index e7010a3..624e7dc 100644
 +    ["<S-h>"] = ":bprev<CR>",
 +    ["<S-f>"] = ":lua vim.lsp.buf.format()<CR>",
 +    ["<S-t>"] = ":!terraform fmt %<CR>",
++    ["<S-m>"] = ":MarkdownPreview<CR>",
++    ["<C-|>"] = ":split<CR>",
++    ["<C-i>"] = ":vertical sba<CR>",
 +
      -- Move current line / block with Alt-j/k a la vscode.
      ["<A-j>"] = ":m .+1<CR>==",
      ["<A-k>"] = ":m .-2<CR>==",
+diff --git a/lua/lvim/lsp/config.lua b/lua/lvim/lsp/config.lua
+index 7313f1f2..f09bd21d 100644
+--- a/lua/lvim/lsp/config.lua
++++ b/lua/lvim/lsp/config.lua
+@@ -131,7 +131,9 @@ return {
+   ---@usage list of settings of nvim-lsp-installer
+   installer = {
+     setup = {
+-      ensure_installed = {},
++      ensure_installed = {
++        "pyright",
++      },
+       automatic_installation = {
+         exclude = {},
+       },
 diff --git a/lua/lvim/plugins.lua b/lua/lvim/plugins.lua
-index ac45a76..95e9f43 100644
+index ac45a76d..b35bb340 100644
 --- a/lua/lvim/plugins.lua
 +++ b/lua/lvim/plugins.lua
-@@ -1,6 +1,15 @@
+@@ -1,6 +1,41 @@
  -- local require = require("lvim.utils.require").require
  local core_plugins = {
++  {
++  "karb94/neoscroll.nvim",
++  config = function ()
++    require('neoscroll').setup({})
++  end
++},
++  {
++  "christoomey/vim-tmux-navigator",
++  cmd = {
++    "TmuxNavigateLeft",
++    "TmuxNavigateDown",
++    "TmuxNavigateUp",
++    "TmuxNavigateRight",
++    "TmuxNavigatePrevious",
++  },
++  keys = {
++    { "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
++    { "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
++    { "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
++    -- { "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
++    { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
++  },
++  },
    { "folke/lazy.nvim", tag = "stable" },
 +  {'nvim-lua/popup.nvim'},
++  -- {'mg979/vim-visual-multi'},
++  {'shivamashtikar/tmuxjump.vim'},
++  {'ibhagwan/fzf-lua'},
 +  {'nvim-lua/plenary.nvim'},
 +  {'nvim-telescope/telescope-media-files.nvim'},
 +  {

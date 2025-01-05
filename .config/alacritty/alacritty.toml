@@ -3,6 +3,9 @@
 #brew install --cask font-hack-nerd-font
 
 import = ["/Users/SMH9A/.config/alacritty/iterm.toml"]
+# import = ["/Users/SMH9A/.config/alacritty/vscode.toml"]
+
+
 
 [font]
 size = 16
@@ -31,23 +34,32 @@ mouse.enabled = true
 binding = { key = "U", mods = "Control|Shift" }
 regex = "(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+"
 
-
-[[hints.enabled]] 
-# command = {program = "Alacritty.app", args = ["-e", "nvim"]} 
-# command = "alacritty"
-command = "vim" 
-# On Linux/BSD hyperlinks = false 
-# command = {program = "/Applications/Alacritty.app/Contents/MacOS/alacritty", args = ["/opt/homebrew/bin/nvim"]}
-post_processing = true 
+[[hints.enabled]]
+command = { program = "bash", args = ["-c", "code-insiders -g \"$(P=${0/#\\~/$HOME}; realpath ${P%:*}):$(echo $0 | cut -s -d: -f 2)\""] }
 hyperlinks = true
-persist = false 
-mouse.enabled = true 
+post_processing = true
+persist = false
+mouse = { enabled = true, mods = "Control" }
+regex = "[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+(:\\d+)?"
 binding = { key = "F", mods = "Control|Shift" } 
-# regex = '[^ ]*/?[^/]+\.[[:alnum:]]+'
-regex = '([~./]?[-a-zA-Z0-9_+-,./@]+)'
+
+# [[hints.enabled]] 
+# # command = {program = "Alacritty.app", args = ["-e", "nvim"]} 
+# # command = "alacritty"
+# command = "vim" 
+# # On Linux/BSD hyperlinks = false 
+# # command = {program = "/Applications/Alacritty.app/Contents/MacOS/alacritty", args = ["/opt/homebrew/bin/nvim"]}
+# post_processing = true 
+# hyperlinks = true
+# persist = false 
+# mouse.enabled = true 
+# binding = { key = "F", mods = "Control|Shift" } 
+# # regex = '[^ ]*/?[^/]+\.[[:alnum:]]+'
+# regex = '([~./]?[-a-zA-Z0-9_+-,./@]+)'
 
 [keyboard]
 bindings = [
   { key = "Right", mods = "Alt", chars = "\u001BF" },
   { key = "Left",  mods = "Alt", chars = "\u001BB" },
+  { key = "l",  mods = "Command",  command = "/usr/bin/clear"} ,
 ]

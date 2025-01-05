@@ -192,7 +192,7 @@ function tc() {
 
   :> ${FILE}
   # Update file after cloning
-  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS GCP-WEBFOCUS GCP-DATAPLATFORM-CUSTOMERINSIGHTS_RETAIL-AT; do 
+  for i in GCP-GDS HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS GCP-WEBFOCUS GCP-DATAPLATFORM-CUSTOMERINSIGHTS_RETAIL-AT; do 
     curl -k -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
@@ -373,7 +373,11 @@ task() {
             }
           }' | jq -r '.key')
         
+        text=$(echo "${*}" | tr " " "-")
         echo "https://${JIRA_URL}/browse/${KEY}"
+        echo "git checkout -b feature/${KEY}-${text}"
+        echo "git commit -m \"${KEY} ${*}\""
+        echo "git checkout -b feature/${KEY}-${text}\ngit commit -m \"${KEY} ${*}\"" | pbcopy
 
         ;;
       n|N|no ) echo "No cURL call was executed";;
@@ -453,7 +457,6 @@ ulimit -n 1024
 
 # cat JIRA....csv  | python3 -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' | jq -r '.[] | select(.Status=="Done" and ."Issue Type"=="Story") | [(."Issue key", .Summary, .Status, .Assignee)] | join(" ")'
 
-
 # yq -o=json eval  data/prod/azure-eg.yaml | jq '.workspaces | [keys[] as $k | {($k): .[$k]["vcs_repo"].identifier}] | add'
 
 
@@ -470,7 +473,15 @@ bindkey '^f' atuin-search
 
 export PATH=/opt/homebrew/anaconda3/bin:$PATH
 
+alias o='open \
+https://devopsinuse.com/blog \
+https://github.com/xjantoth/meetup-tfc-gcp-project-factory/tree/main \
+"https://console.cloud.google.com/welcome/new?authuser=2&organizationId=154780322803&supportedpurview=project" \
+https://app.terraform.io \
+https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/fast/stages/2-project-factory
+'
 
+alias oo='open  ~/Documents/new-md-presentation-2.mp4'
 # ********************************************************************************** 
 # **** How to change wrong author and email address at all commits at current branch
 # ********************************************************************************** 
@@ -483,3 +494,6 @@ export PATH=/opt/homebrew/anaconda3/bin:$PATH
 # dotfiles log
 # dotfiles push -f
 
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /opt/homebrew/Cellar/tfenv/3.0.0/versions/1.8.3/terraform terraform
