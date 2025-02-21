@@ -11,14 +11,10 @@ autoload -U +X compinit && compinit
 
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /opt/homebrew/share/zsh-autosuggestions/zsh-atuin.zsh
 
 bindkey -e
-#export AWS_ASSUME_ROLE_TTL=1h
-#export AWS_SESSION_TTL=12h
-# export PYTHONPATH=$PYTHONPATH:/usr/lib/python3.9/site-packages
-export BROWSER=/usr/bin/chromium
-export EDITOR=~/.local/bin/lvim
+export PATH=/Users/SMH9A/.local/bin:$PATH
+export EDITOR=~/.local/bin/nvim
 export LANG=en_US.UTF-8
 
 bindkey '\e[A' history-search-backward
@@ -27,11 +23,12 @@ bindkey '\e[B' history-search-forward
 setopt interactivecomments
 
 bindkey '^[[3~' delete-char 
-bindkey '^[[H' beginning-of-line
+# bindkey '^[[H' beginning-of-line
 bindkey '^[[F' end-of-line
 bindkey "\E[1~" beginning-of-line
 bindkey "\E[4~" end-of-line
 bindkey -e
+bindkey "^A" beginning-of-line
 
 man() {
     LESS_TERMCAP_md=$'\e[01;31m' \
@@ -59,19 +56,17 @@ setopt PROMPT_SUBST
 PROMPT='%B%{$fg[red]%}[%{$fg[yellow]%}arch%{$fg[green]%}:%{$fg[blue]%}${PWD##*/}%{$fg[green]%} ${vcs_info_msg_0_}%{$fg[red]%}]%{$reset_color%} %b'
 
 # Kubernetes
-source <(kubectl completion zsh)
 alias k=kubectl
-# complete -F __start_kubectl k
 
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Generated for envman. Do not edit.
-[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
-PATH="/opt/homebrew/opt/make/libexec/gnubin:$PATH"
+# [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+# PATH="/opt/homebrew/opt/make/libexec/gnubin:$PATH"
 
-source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
-source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+#source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+#source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
 
 # https://antelo.medium.com/how-to-manage-your-dotfiles-with-git-f7aeed8adf8b
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
@@ -82,25 +77,17 @@ alias ll='ls -l'
 #alias d='dragon-drag-and-drop -a -x'
 #alias x="xclip -selection c"
 alias tmux='tmux -u2'
-# ~/.local/share/lunarvim/lvim
 # git -C ~/.local/share/lunarvim/lvim diff
-alias vim='~/.local/bin/lvim'
-alias lvim='~/.local/bin/lvim'
-alias lt='lvim ~/.local/share/lunarvim/lvim/lua/lvim/core/telescope.lua'
-alias lg='git -C ~/.local/share/lunarvim/lvim diff'
-alias lff='cd ~/.local/share/lunarvim/lvim'
-alias lk='lvim ~/.local/share/lunarvim/lvim/lua/lvim/core/which-key.lua'
-alias lck='lvim ~/.local/share/lunarvim/lvim/lua/lvim/keymappings.lua'
-alias lgdiff='git -C ~/.local/share/lunarvim/lvim diff > ~/.config/lvimdiff'
-alias lll='alias | sort | grep "^l"'
 
 alias c='pbcopy <<<$(echo " ¯\_(ツ)_/¯")'
-alias p='lvim ~/.config/nvim/lua/plugins/example.lua'
-alias z='lvim ~/.zshrc'
-alias t='lvim ~/.tmux.conf'
+alias p='nvim ~/.config/nvim/lua/plugins/example.lua'
+alias z='nvim ~/.zshrc'
+alias t='nvim ~/.tmux.conf'
 alias dev='cd ~/Documents/work/devopsinuse/'
 
-alias v='lvim'
+alias v='nvim'
+alias vim='nvim'
+
 alias s='source ~/.zshrc'
 # KeepassXC using password from local gpg via pass binary
 alias kx-list='echo $(pass keepassxc-password) | keepassxc-cli ls   ~/Documents/keepassxc-toth.kdbx'
@@ -118,6 +105,11 @@ alias ff='cd ~/Documents/work/$(cd ~/Documents/work && ls -d */  | fzf)'
 alias gg="git branch -a | sed 's|remotes\/origin\/||' | fzf --height=20% --reverse --info=inline | xargs git checkout"
 alias ss="tmux list-windows -F '#I #W' | fzf | cut -d' ' -f1 | xargs tmux select-window -t"
 alias dots='open https://github.com/xjantoth/dotfiles'
+
+
+alias gal='gcloud auth list'
+alias gcd='gcloud config configurations describe'
+alias gca='gcloud config configurations activate'
 
 # To detect duplicates in yaml list
 # yq -o=json eval  data/prod/root.yaml | jq '.ldap.ldap.members  | group_by(.) | map(select(length>1) | .[0])'
@@ -158,41 +150,61 @@ function git-prune-branches() {
   git branch -vv | grep ': gone]'|  grep -v "\*" | awk '{ print $1; }' | xargs -r git branch -D ;
 }
 
+function tf() {
+  FILE="/tmp/$(date +"%Y-%m-%dT%H:%M:%S").txt"
+  CLONED_REPOS="/tmp/cloned-$(date +"%Y-%m-%dT%H:%M:%S").txt"
+  find ~/Documents/work -maxdepth 1 -type d | nl -v8 -s: | nl -v8 -s: > "${CLONED_REPOS}"
+
+  PASS=$(security find-generic-password -a $USER -s BITBUCKET-TOKEN -w)
+  SUSER=$(security find-generic-password -a $USER -s BITBUCKET-USER -w)
+  BITBUCKET_URL=$(security find-generic-password -a $USER -s BITBUCKET-URL -w)
+  STASH_URL=$(security find-generic-password -a $USER -s STASH_URL -w)
+  SOL_FACTORY_PROJECT=$(security find-generic-password -a $USER -s SOL_FACTORY_PROJECT -w)
+
+  if [[ ! -d "${HOME}/Documents/work/${SOL_FACTORY_PROJECT}" ]]; then
+    git clone ssh://git@${STASH_URL}:7999/HORIZON/${SOL_FACTORY_PROJECT}.git "${HOME}/Documents/work/${SOL_FACTORY_PROJECT}" 
+  fi
+
+  PROJECTS=$(find /Users/${USER}/Documents/work/${SOL_FACTORY_PROJECT}/organization/*/*/* -type f -name "*.yaml" | xargs -I % sh -c 'file="%" ;yq -o json "$file" | jq -r .vcs_project ' | tr '[:lower:]' '[:upper:]' | sort | uniq  | grep -v NULL)
+
+  TARGET=$(for i in $(echo ${PROJECTS}); do 
+    curl -k -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
+      | sed 's|^|'"$i/"'|' 
+  done | fzf)
+
+  REPO=$(echo "${HOME}/Documents/work/${TARGET#*/}" | tr '[:upper:]' '[:lower:]')
+
+  if [[ ! -d "${REPO}" ]]; then
+    echo "${HOME}/Documents/work/${TARGET#*/}"
+    git clone ssh://git@${STASH_URL}:7999/${TARGET}.git "${HOME}/Documents/work/${TARGET#*/}"
+    
+    LAST_TMUX_WINDOW_NUMBER=$(tmux list-windows | tail -n1 | cut -d":" -f1)
+    PN=$((LAST_TMUX_WINDOW_NUMBER+1))
+    real_wdir="${HOME}/Documents/work/${TARGET#*/}"
+
+
+    tmux new-window -t "mac:${PN%:*}" -n "${TARGET}" -c "${real_wdir}";
+    tmux split-window -t "mac:${PN%:*}" -v -c "#{pane_current_path}" -l '24%';
+    tmux select-pane -t "mac:${PN%:*}" -U;
+
+  fi
+}
+
 function tc() {
   # set -xT
   FILE="/tmp/$(date +"%Y-%m-%dT%H:%M:%S").txt"
   CLONED_REPOS="/tmp/cloned-$(date +"%Y-%m-%dT%H:%M:%S").txt"
   find ~/Documents/work -maxdepth 1 -type d | nl -v8 -s: | nl -v8 -s: > "${CLONED_REPOS}"
 
-  # PASS=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa password ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-token")
-  # SUSER=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa username ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-suser")
-  # BITBUCKET_URL=$(echo $(pass keepassxc-password) | keepassxc-cli show -sa url ~/Documents/keepassxc-toth.kdbx  "cleaner/bitbucket-url")
   PASS=$(security find-generic-password -a $USER -s BITBUCKET-TOKEN -w)
   SUSER=$(security find-generic-password -a $USER -s BITBUCKET-USER -w)
   BITBUCKET_URL=$(security find-generic-password -a $USER -s BITBUCKET-URL -w)
+  SOL_FACTORY_PROJECT=$(security find-generic-password -a $USER -s SOL_FACTORY_PROJECT -w)
 
-  for i in HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS GCP-WEBFOCUS GCP-DATAPLATFORM-CUSTOMERINSIGHTS_RETAIL-AT; do 
-    curl -k -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
-      | sed 's|^|'"$i/"'|' >> ${FILE}; 
-  done
+  PROJECTS=$(find /Users/${USER}/Documents/work/${SOL_FACTORY_PROJECT}/organization/*/*/* -type f -name "*.yaml" | xargs -I % sh -c 'file="%" ;yq -o json "$file" | jq -r .vcs_project ' | tr '[:lower:]' '[:upper:]' | sort | uniq  | grep -v NULL)
 
-  echo "debug ..."
-  cat ${FILE}
-
-  # Clone repositories
-  while read -r i; do
-    repo="${i##*/}"
-    if [[ "$(grep -E "${repo}" "${CLONED_REPOS}")" == "" ]]; then
-      full="${i// /-}"
-      lpath="${repo// /-}"
-      echo "git clone ssh://git@${BITBUCKET_URL}:7999/${full}.git ~/Documents/work/${lpath}"
-      git clone ssh://git@${BITBUCKET_URL}:7999/${full}.git ~/Documents/work/${lpath}
-    fi
-  done < "${FILE}"
-
-  :> ${FILE}
   # Update file after cloning
-  for i in GCP-GDS HORIZON TFE-GCP-MODULES AZURE O365 TFE-GCP-DATABASES CS-ATRON MONGODBATLAS GCP-WEBFOCUS GCP-DATAPLATFORM-CUSTOMERINSIGHTS_RETAIL-AT; do 
+  for i in $(echo ${PROJECTS}) ; do 
     curl -k -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
       | sed 's|^|'"$i/"'|' >> ${FILE}; 
   done
@@ -209,7 +221,10 @@ function tc() {
   for i in  $(ls -d ~/Documents/work/*/ | nl -v8 -s:); do
 
     real_wdir=${${i##*:}%/*}
-    fancy_wdir=$(grep -E "/${real_wdir##*/}$" $FILE)
+    fancy_wdir=$(grep -iE "/${real_wdir##*/}$" $FILE)
+    echo "------------------"
+    echo real_wdir: $real_wdir
+    echo fancy_wdir: $fancy_wdir
 
     if [[ "$fancy_wdir" == "" ]]; then
       name=${real_wdir##*/}
@@ -239,7 +254,7 @@ hh(){
       --delimiter : \
       --preview 'bat --color=always {1} --highlight-line {2}' \
       --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
-      --bind 'enter:become(lvim {1} +{2})'
+      --bind 'enter:become(nvim {1} +{2})'
   cd -
 }
 
@@ -256,13 +271,13 @@ ww(){
       --delimiter : \
       --preview 'bat --color=always {1} --highlight-line {2}' \
       --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
-      --bind 'enter:become(lvim {1} +{2})'
+      --bind 'enter:become(~/.local/bin/nvim {1} +{2})'
 }
 
 
 solution(){
 
-  for i in $(find ./organization/*/environments/*/projects -type f -name "*.yaml" | xargs -I % sh -c 'echo %'); do 
+  for i in $(find ./organization/*/*/* -type f -name "*.yaml" | xargs -I % sh -c 'echo %'); do 
     FN=${i##*/}; 
     echo "${i}"
 
@@ -282,7 +297,7 @@ solution(){
       --delimiter ': ' \
       --preview 'bat --color=always -l yaml $(FILE={1}; echo ${FILE#*/})' \
       --preview-window 'up,80%,border-bottom,+{2}+3/3,~3' \
-      --bind 'enter:become(lvim $(FILE={1}; echo ${FILE#*/}); echo $(FILE={1}; echo ${FILE#*/}); echo $(FILE={1}; echo ${FILE#*/}) | pbcopy)'
+      --bind 'enter:become(nvim $(FILE={1}; echo ${FILE#*/}); echo $(FILE={1}; echo ${FILE#*/}); echo $(FILE={1}; echo ${FILE#*/}) | pbcopy)'
     
 }
 # open_file creates and opens a file in the specified directory
@@ -319,7 +334,7 @@ $timestamp
 " >>$filename
 
 	# Open the file in Neovim
-   lvim '+ normal 2GzzA' $filename
+   ~/.local/bin/nvim '+ normal 2GzzA' $filename
 }
 
 task() {
@@ -377,7 +392,10 @@ task() {
         echo "https://${JIRA_URL}/browse/${KEY}"
         echo "git checkout -b feature/${KEY}-${text}"
         echo "git commit -m \"${KEY} ${*}\""
-        echo "git checkout -b feature/${KEY}-${text}\ngit commit -m \"${KEY} ${*}\"" | pbcopy
+        echo -e "
+        git checkout -b feature/${KEY}-${text}
+        git commit -m \"${KEY} ${*}\"
+        " | pbcopy
 
         ;;
       n|N|no ) echo "No cURL call was executed";;
@@ -466,22 +484,10 @@ ulimit -n 1024
 # terraform state  mv 'tfe_project.project["azure-deveg_loganalytics"]' 'tfe_project.project["azure-deveg_o365"]'
 #
 #
-export ATUIN_NOBIND="true"
-eval "$(atuin init zsh)"
+# export ATUIN_NOBIND="true"
+# eval "$(atuin init zsh)"
 
-bindkey '^f' atuin-search
 
-export PATH=/opt/homebrew/anaconda3/bin:$PATH
-
-alias o='open \
-https://devopsinuse.com/blog \
-https://github.com/xjantoth/meetup-tfc-gcp-project-factory/tree/main \
-"https://console.cloud.google.com/welcome/new?authuser=2&organizationId=154780322803&supportedpurview=project" \
-https://app.terraform.io \
-https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/fast/stages/2-project-factory
-'
-
-alias oo='open  ~/Documents/new-md-presentation-2.mp4'
 # ********************************************************************************** 
 # **** How to change wrong author and email address at all commits at current branch
 # ********************************************************************************** 
@@ -497,3 +503,7 @@ alias oo='open  ~/Documents/new-md-presentation-2.mp4'
 
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /opt/homebrew/Cellar/tfenv/3.0.0/versions/1.8.3/terraform terraform
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/SMH9A/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)

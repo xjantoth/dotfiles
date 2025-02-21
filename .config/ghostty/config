@@ -1,6 +1,6 @@
 font-family = "Monaco Nerd Font Mono"
-theme = "iterm-c"
-background-opacity = 0.93
+#theme = "iterm-c"
+background-opacity = 0.97
 cursor-style = block
 cursor-color = yellow
 # Keybindings
@@ -13,4 +13,6 @@ keybind = cmd+s>r=reload_config
 # macos-titlebar-style=transparent
 # window-colorspace = "display-p3"
 # keybindings
-
+# keys:
+#   - key: C-a
+#     action: send:0x01 
