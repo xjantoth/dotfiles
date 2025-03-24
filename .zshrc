@@ -14,7 +14,7 @@ source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 bindkey -e
 export PATH=/Users/SMH9A/.local/bin:$PATH
-export EDITOR=~/.local/bin/nvim
+export EDITOR=nvim
 export LANG=en_US.UTF-8
 
 bindkey '\e[A' history-search-backward
@@ -165,12 +165,28 @@ function tf() {
     git clone ssh://git@${STASH_URL}:7999/HORIZON/${SOL_FACTORY_PROJECT}.git "${HOME}/Documents/work/${SOL_FACTORY_PROJECT}" 
   fi
 
-  PROJECTS=$(find /Users/${USER}/Documents/work/${SOL_FACTORY_PROJECT}/organization/*/*/* -type f -name "*.yaml" | xargs -I % sh -c 'file="%" ;yq -o json "$file" | jq -r .vcs_project ' | tr '[:lower:]' '[:upper:]' | sort | uniq  | grep -v NULL)
+  PROJECTS=$(find /Users/${USER}/Documents/work/${SOL_FACTORY_PROJECT}/organization/*/*/* -type f -name "*.yaml" \
+    | xargs -I % sh -c 'file="%" ;yq -o json "$file" | jq -r .vcs_project ' \
+    | tr '[:lower:]' '[:upper:]' | sort | uniq  | grep -v NULL)
 
-  TARGET=$(for i in $(echo ${PROJECTS}); do 
-    curl -k -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
-      | sed 's|^|'"$i/"'|' 
-  done | fzf)
+  PROJECTS_ARRAY=()
+
+  # Loop over each line in the variable and fill the array
+  while IFS= read -r line; do
+      PROJECTS_ARRAY+=("https://$BITBUCKET_URL/rest/api/1.0/projects/$line/repos?limit=1000")
+  done <<< "$PROJECTS"
+
+  # echo $PROJECTS_ARRAY
+
+  TARGET=$(printf "%s\n" "${PROJECTS_ARRAY[@]}" \
+  | xargs -P 10 -n 1 curl -k -s -u "${SUSER}:${PASS}" \
+  | jq -r '.values|.[] | "\(.project.key)/\(.name)"' | fzf )
+
+
+  # TARGET=$(for i in $(echo ${PROJECTS}); do 
+  #   curl -k -s -u "${SUSER}:$PASS" -X GET "https://${BITBUCKET_URL}/rest/api/1.0/projects/${i}/repos?limit=1000" | jq -r '.values|.[]|.name' \
+  #     | sed 's|^|'"$i/"'|' 
+  # done | fzf)
 
   REPO=$(echo "${HOME}/Documents/work/${TARGET#*/}" | tr '[:upper:]' '[:lower:]')
 
@@ -189,6 +205,7 @@ function tf() {
 
   fi
 }
+
 
 function tc() {
   # set -xT
@@ -271,7 +288,7 @@ ww(){
       --delimiter : \
       --preview 'bat --color=always {1} --highlight-line {2}' \
       --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
-      --bind 'enter:become(~/.local/bin/nvim {1} +{2})'
+      --bind 'enter:become(nvim {1} +{2})'
 }
 
 
@@ -334,7 +351,7 @@ $timestamp
 " >>$filename
 
 	# Open the file in Neovim
-   ~/.local/bin/nvim '+ normal 2GzzA' $filename
+   nvim '+ normal 2GzzA' $filename
 }
 
 task() {
@@ -435,6 +452,7 @@ presentation() {
     echo "${green}Sprint Name${reset}: ${JIRA_CURRENT_SPRINT_NAME}"
 
     echo "${green}Stories:${reset}"
+    export JIRA_CURRENT_SPRINT=17616
     curl -s -k --header 'Accept: application/json' \
       --header "Authorization: Bearer ${JIRA_TOKEN}" \
       --request GET --url "https://${JIRA_URL}/rest/agile/1.0/board/${JIRA_BOARD}/sprint/${JIRA_CURRENT_SPRINT}/issue?startAt=0&maxResults=${MAX_ENTRIES}" | \

@@ -59,6 +59,20 @@ function open_tfe_workspace_url()
   vim.fn.jobstart({ "open", url }, { detach = true })
   vim.notify("Opening: " .. url, vim.log.levels.INFO)
 end
+
+-- Function to copy the current file path to the clipboard
+function copy_file_path()
+  local filepath = vim.fn.expand("%:p")
+  vim.notify("Copying to clipboard: " .. filepath, vim.log.levels.INFO)
+  -- vim.fn.system({ "echo", filepath, "|", "pbcopy" })
+  os.execute('echo "' .. filepath .. '" | pbcopy')
+end
+
+vim.api.nvim_create_autocmd({"FocusGained", "CursorHold"}, {
+  command = "checktime",
+})
+
+
 -- 🚀 Optional: Keybinding
 
 -- vim.cmd("colorscheme catppuccin")
@@ -70,6 +84,7 @@ vim.keymap.set("n", "<Leader>/", "<cmd>Telescope live_grep<CR>", { desc = "live_
 vim.keymap.set("n", "<leader>ge",open_bb_customer_url, { desc = "Open Repo URL" })
 vim.keymap.set("n", "<leader>ga",open_gcp_project_url, { desc = "Open GCP project URL" })
 vim.keymap.set("n", "<leader>gw",open_tfe_workspace_url, { desc = "Open TFE workspace URL" })
+vim.keymap.set("n", "<leader>m", copy_file_path, { desc = "Copy filepath to clipboard" })
 
 vim.g.VM_maps = {
   ["Find Under"]         = "<C-n>",     -- Default multi-cursor selection
